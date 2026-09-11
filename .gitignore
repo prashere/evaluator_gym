@@ -1,0 +1,22 @@
+# Secrets and local env
+.env
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Generated at runtime 
+tasks/generated/
+
+# RL checkpoints 
+checkpoints/
+
+AGENTS.md
+
+private/

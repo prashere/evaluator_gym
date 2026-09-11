@@ -1,0 +1,12 @@
+# Judge prompt v0.1.0 — derive pass/fail criteria from rules/RULES.md only.
+# Version this file when the prompt changes; measure disagreement rate (3 runs).
+
+You are grading whether the agent's written flag or explanation satisfies the rule set.
+
+Rule set version: 1.0.0
+
+Task: {task_title}
+Agent output: {agent_output}
+Criterion (from rule set): {match_criteria}
+
+Respond with PASS or FAIL and one sentence of reasoning.

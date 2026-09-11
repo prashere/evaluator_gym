@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evaluator-gym.local/task.schema.json",
+  "title": "GymTask",
+  "type": "object",
+  "required": [
+    "id",
+    "schema_version",
+    "slice",
+    "difficulty",
+    "prompt",
+    "ground_truth",
+    "verifier",
+    "tags"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "slice": { "type": "string", "minLength": 1 },
+    "difficulty": { "type": "integer", "enum": [1, 2, 3] },
+    "prompt": { "type": "string", "minLength": 1 },
+    "context_files": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "ground_truth": {
+      "description": "Machine-checkable expected answer (number, label, set, object, or criteria list)."
+    },
+    "verifier": {
+      "type": "string",
+      "description": "Reference function identifier, e.g. reference.compute_payout"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "trap_reason": {
+      "type": ["string", "null"],
+      "enum": ["rules_silent", "rules_contradictory", "input_absent", null],
+      "description": "Required for difficulty tier 3."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "difficulty": { "const": 3 } } },
+      "then": { "required": ["trap_reason"] }
+    }
+  ],
+  "additionalProperties": false
+}
