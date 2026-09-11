@@ -2,7 +2,6 @@
 name = "evaluator-gym"
 version = "0.1.0"
 description = "Verifiable evaluation environment for AI agents (Niural take-home gym)."
-readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "verifiers @ git+https://github.com/PrimeIntellect-ai/verifiers.git",
@@ -23,8 +22,11 @@ dev = [
 ]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/evaluator_gym"]
@@ -35,7 +37,7 @@ packages = ["src/evaluator_gym"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 
 [tool.ruff]
 line-length = 100
