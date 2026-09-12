@@ -225,11 +225,10 @@ def _definitions() -> list[dict[str, Any]]:
         )
     )
 
+    # §14 Example 2 — invoice qty 11 exceeds tolerance (ordered/received 10)
     c = build_base_case("seed-007")
-    c["invoice"]["lines"][0]["quantity"] = "41"
-    c["invoice"]["stated_net_total"] = "4100.00"
-    c["purchase_order"]["lines"][0]["ordered_quantity"] = "40"
-    c["goods_receipt"]["received_quantities"]["ITEM-A"] = "40"
+    c["invoice"]["lines"][0]["quantity"] = "11"
+    c["invoice"]["stated_net_total"] = "1100.00"
     tasks.append(_reconciliation_task("seed-007", 2, "computation", ["§9.3"], ["seed", "tier2", "tolerance"], c))
 
     c = build_base_case("seed-008")
@@ -237,12 +236,13 @@ def _definitions() -> list[dict[str, Any]]:
     c["invoice"]["stated_net_total"] = "1020.00"
     tasks.append(_reconciliation_task("seed-008", 2, "computation", ["§9.4"], ["seed", "tier2", "tolerance"], c))
 
+    # §14 Example 3 — price tolerance + missing approval (60 × 102 = 6120 CU)
     c = build_base_case("seed-009")
-    c["invoice"]["lines"][0]["quantity"] = "55"
-    c["invoice"]["lines"][0]["unit_price"] = "110.00"
-    c["invoice"]["stated_net_total"] = "6050.00"
-    c["purchase_order"]["lines"][0]["ordered_quantity"] = "55"
-    c["goods_receipt"]["received_quantities"]["ITEM-A"] = "55"
+    c["invoice"]["lines"][0]["quantity"] = "60"
+    c["invoice"]["lines"][0]["unit_price"] = "102.00"
+    c["invoice"]["stated_net_total"] = "6120.00"
+    c["purchase_order"]["lines"][0]["ordered_quantity"] = "60"
+    c["goods_receipt"]["received_quantities"]["ITEM-A"] = "60"
     tasks.append(
         _reconciliation_task("seed-009", 2, "computation", ["§9.4", "§11.2"], ["seed", "tier2", "approval"], c)
     )
@@ -281,13 +281,14 @@ def _definitions() -> list[dict[str, Any]]:
     ]
     tasks.append(_reconciliation_task("seed-011", 2, "computation", ["§8.2"], ["seed", "tier2", "amendment"], c))
 
+    # §14 Example 6 — stated 24,000 vs verified 26,500 CU (> 25,000 delegation)
     c = build_base_case("seed-012")
-    c["invoice"]["lines"] = [{"item_id": "ITEM-A", "quantity": "80", "unit_price": "330.00"}]
-    c["invoice"]["stated_net_total"] = "23000.00"
+    c["invoice"]["lines"] = [{"item_id": "ITEM-A", "quantity": "100", "unit_price": "265.00"}]
+    c["invoice"]["stated_net_total"] = "24000.00"
     c["purchase_order"]["lines"] = [
-        {"item_id": "ITEM-A", "ordered_quantity": "80", "unit_price": "330.00"},
+        {"item_id": "ITEM-A", "ordered_quantity": "100", "unit_price": "265.00"},
     ]
-    c["goods_receipt"]["received_quantities"] = {"ITEM-A": "80"}
+    c["goods_receipt"]["received_quantities"] = {"ITEM-A": "100"}
     tasks.append(
         _reconciliation_task(
             "seed-012",
@@ -299,13 +300,14 @@ def _definitions() -> list[dict[str, Any]]:
         )
     )
 
+    # §14 Example 7 — ITEM-Z on invoice, not on PO; no false tolerance tag
     c = build_base_case("seed-013")
     c["invoice"]["lines"] = [
         {"item_id": "ITEM-A", "quantity": "10", "unit_price": "100.00"},
-        {"item_id": "ITEM-B", "quantity": "3", "unit_price": "200.00"},
+        {"item_id": "ITEM-Z", "quantity": "5", "unit_price": "50.00"},
     ]
-    c["invoice"]["stated_net_total"] = "1600.00"
-    c["goods_receipt"]["received_quantities"]["ITEM-B"] = "3"
+    c["invoice"]["stated_net_total"] = "1250.00"
+    c["goods_receipt"]["received_quantities"]["ITEM-Z"] = "5"
     tasks.append(
         _reconciliation_task(
             "seed-013",
@@ -349,21 +351,15 @@ def _definitions() -> list[dict[str, Any]]:
         )
     )
 
-    c = build_base_case("seed-016")
-    c["invoice"]["lines"][0]["quantity"] = "48"
-    c["invoice"]["lines"][0]["unit_price"] = "100.00"
-    c["invoice"]["stated_net_total"] = "4800.00"
-    c["purchase_order"]["lines"][0]["ordered_quantity"] = "48"
-    c["purchase_order"]["lines"][0]["unit_price"] = "100.00"
-    c["goods_receipt"]["received_quantities"]["ITEM-A"] = "48"
+    # §14 Example 1 — clean APPROVE (10 × 100 CU, all records align)
     tasks.append(
         _reconciliation_task(
             "seed-016",
             2,
             "computation",
             ["§10.1", "§11.1"],
-            ["seed", "tier2", "approval-band"],
-            c,
+            ["seed", "tier2", "approve"],
+            build_base_case("seed-016"),
         )
     )
 
@@ -400,12 +396,8 @@ def _definitions() -> list[dict[str, Any]]:
     )
 
     # --- Tier 3: traps (5) ---
+    # §14 Example 5 — same-date amendments give different unit prices for ITEM-A
     c = build_base_case("seed-019")
-    c["purchase_order"]["lines"][0]["ordered_quantity"] = "100"
-    c["invoice"]["lines"][0]["quantity"] = "100"
-    c["invoice"]["lines"][0]["unit_price"] = "49.00"
-    c["invoice"]["stated_net_total"] = "4900.00"
-    c["goods_receipt"]["received_quantities"]["ITEM-A"] = "100"
     c["purchase_order"]["amendments"] = [
         {
             "amendment_id": "AMD-1",
@@ -413,7 +405,7 @@ def _definitions() -> list[dict[str, Any]]:
             "status": "SIGNED",
             "signing_authority": "PROCUREMENT_MANAGER",
             "effective_date": "2026-02-01",
-            "changes": {"ITEM-A": {"ordered_quantity": "90"}},
+            "changes": {"ITEM-A": {"unit_price": "95.00"}},
         },
         {
             "amendment_id": "AMD-2",
@@ -421,7 +413,7 @@ def _definitions() -> list[dict[str, Any]]:
             "status": "SIGNED",
             "signing_authority": "PROCUREMENT_DIRECTOR",
             "effective_date": "2026-02-01",
-            "changes": {"ITEM-A": {"ordered_quantity": "110"}},
+            "changes": {"ITEM-A": {"unit_price": "105.00"}},
         },
     ]
     tasks.append(
