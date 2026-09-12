@@ -90,6 +90,24 @@
         },
         "not": { "required": ["retrieval_spec"] }
       }
+    },
+    {
+      "if": { "properties": { "difficulty": { "const": 2 } }, "required": ["difficulty"] },
+      "then": {
+        "properties": {
+          "tier_intent": { "const": "computation" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "difficulty": { "const": 3 } }, "required": ["difficulty"] },
+      "then": {
+        "properties": {
+          "tier_intent": {
+            "enum": ["missing_evidence", "non_determinable", "compound_trap", "precedence_trap"]
+          }
+        }
+      }
     }
   ],
   "additionalProperties": false,

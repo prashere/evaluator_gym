@@ -6,9 +6,9 @@
   "lines": [
     {
       "item_id": "ITEM-A",
-      "quantity": "55",
-      "unit_price": "110.00"
+      "quantity": "60",
+      "unit_price": "102.00"
     }
   ],
-  "stated_net_total": "6050.00"
+  "stated_net_total": "6120.00"
 }

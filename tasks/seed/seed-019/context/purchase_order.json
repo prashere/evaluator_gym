@@ -5,7 +5,7 @@
   "lines": [
     {
       "item_id": "ITEM-A",
-      "ordered_quantity": "100",
+      "ordered_quantity": "10",
       "unit_price": "100.00"
     }
   ],
@@ -18,7 +18,7 @@
       "effective_date": "2026-02-01",
       "changes": {
         "ITEM-A": {
-          "ordered_quantity": "90"
+          "unit_price": "95.00"
         }
       }
     },
@@ -30,7 +30,7 @@
       "effective_date": "2026-02-01",
       "changes": {
         "ITEM-A": {
-          "ordered_quantity": "110"
+          "unit_price": "105.00"
         }
       }
     }

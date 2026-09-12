@@ -26,11 +26,11 @@
       "lines": [
         {
           "item_id": "ITEM-A",
-          "quantity": "80",
-          "unit_price": "330.00"
+          "quantity": "100",
+          "unit_price": "265.00"
         }
       ],
-      "stated_net_total": "23000.00"
+      "stated_net_total": "24000.00"
     },
     "purchase_order": {
       "purchase_order_id": "PO-900",
@@ -39,8 +39,8 @@
       "lines": [
         {
           "item_id": "ITEM-A",
-          "ordered_quantity": "80",
-          "unit_price": "330.00"
+          "ordered_quantity": "100",
+          "unit_price": "265.00"
         }
       ],
       "amendments": []
@@ -48,7 +48,7 @@
     "goods_receipt": {
       "purchase_order_id": "PO-900",
       "received_quantities": {
-        "ITEM-A": "80"
+        "ITEM-A": "100"
       }
     },
     "vendor_record": {

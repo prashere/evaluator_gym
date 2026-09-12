@@ -5,8 +5,8 @@
   "lines": [
     {
       "item_id": "ITEM-A",
-      "ordered_quantity": "80",
-      "unit_price": "330.00"
+      "ordered_quantity": "100",
+      "unit_price": "265.00"
     }
   ],
   "amendments": []

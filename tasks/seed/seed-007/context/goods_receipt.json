@@ -1,6 +1,6 @@
 {
   "purchase_order_id": "PO-900",
   "received_quantities": {
-    "ITEM-A": "40"
+    "ITEM-A": "10"
   }
 }

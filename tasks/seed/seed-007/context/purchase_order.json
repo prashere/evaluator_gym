@@ -5,7 +5,7 @@
   "lines": [
     {
       "item_id": "ITEM-A",
-      "ordered_quantity": "40",
+      "ordered_quantity": "10",
       "unit_price": "100.00"
     }
   ],

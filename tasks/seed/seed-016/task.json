@@ -26,11 +26,11 @@
       "lines": [
         {
           "item_id": "ITEM-A",
-          "quantity": "48",
+          "quantity": "10",
           "unit_price": "100.00"
         }
       ],
-      "stated_net_total": "4800.00"
+      "stated_net_total": "1000.00"
     },
     "purchase_order": {
       "purchase_order_id": "PO-900",
@@ -39,7 +39,7 @@
       "lines": [
         {
           "item_id": "ITEM-A",
-          "ordered_quantity": "48",
+          "ordered_quantity": "10",
           "unit_price": "100.00"
         }
       ],
@@ -48,7 +48,7 @@
     "goods_receipt": {
       "purchase_order_id": "PO-900",
       "received_quantities": {
-        "ITEM-A": "48"
+        "ITEM-A": "10"
       }
     },
     "vendor_record": {
@@ -65,7 +65,7 @@
   "tags": [
     "seed",
     "tier2",
-    "approval-band"
+    "approve"
   ],
   "rules_under_test": [
     "\u00a710.1",
