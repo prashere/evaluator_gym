@@ -1,0 +1,85 @@
+{
+  "id": "seed-003",
+  "schema_version": "1.0.0",
+  "slice": "ap-invoice-reconciliation",
+  "difficulty": 1,
+  "tier_intent": "retrieval",
+  "prompt": "Using only the attached context files, report the received quantity recorded for item ITEM-A on the goods receipt in goods_receipt.json. Respond with JSON only: {\"item_id\": \"ITEM-A\", \"received_quantity\": \"<QTY>\"}.",
+  "context_files": [
+    "context/goods_receipt.json"
+  ],
+  "case": {
+    "context": {
+      "case_id": "seed-003",
+      "decision_date": "2026-03-01",
+      "ruleset_version": "1.0.0"
+    },
+    "invoice": {
+      "invoice_id": "INV-001",
+      "vendor_id": "V-100",
+      "purchase_order_id": "PO-900",
+      "currency": "CU",
+      "lines": [
+        {
+          "item_id": "ITEM-A",
+          "quantity": "10",
+          "unit_price": "100.00"
+        }
+      ],
+      "stated_net_total": "1000.00"
+    },
+    "purchase_order": {
+      "purchase_order_id": "PO-900",
+      "vendor_id": "V-100",
+      "currency": "CU",
+      "lines": [
+        {
+          "item_id": "ITEM-A",
+          "ordered_quantity": "10",
+          "unit_price": "100.00"
+        }
+      ],
+      "amendments": []
+    },
+    "goods_receipt": {
+      "purchase_order_id": "PO-900",
+      "received_quantities": {
+        "ITEM-A": "10"
+      }
+    },
+    "vendor_record": {
+      "vendor_id": "V-100",
+      "status": "ACTIVE"
+    },
+    "approval_evidence": null
+  },
+  "ground_truth": {
+    "item_id": "ITEM-A",
+    "received_quantity": "10"
+  },
+  "verifier": "retrieval.exact_match",
+  "retrieval_spec": {
+    "fields": {
+      "item_id": {
+        "const": "ITEM-A"
+      },
+      "received_quantity": [
+        "goods_receipt",
+        "received_quantities",
+        "ITEM-A"
+      ]
+    }
+  },
+  "tags": [
+    "seed",
+    "tier1",
+    "retrieval",
+    "goods-receipt"
+  ],
+  "rules_under_test": [
+    "\u00a73.5"
+  ],
+  "ruleset_version": "1.0.0",
+  "case_id": "seed-003",
+  "decision_date": "2026-03-01"
+}

@@ -1,0 +1,14 @@
+{
+  "invoice_id": "INV-001",
+  "vendor_id": "V-200",
+  "purchase_order_id": "PO-900",
+  "currency": "USD",
+  "lines": [
+    {
+      "item_id": "ITEM-A",
+      "quantity": "10",
+      "unit_price": "100.00"
+    }
+  ],
+  "stated_net_total": "1000.00"
+}

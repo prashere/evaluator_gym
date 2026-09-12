@@ -1,0 +1,77 @@
+{
+  "id": "seed-016",
+  "schema_version": "1.0.0",
+  "slice": "ap-invoice-reconciliation",
+  "difficulty": 2,
+  "tier_intent": "computation",
+  "prompt": "Review the supplier invoice case in the attached context files. The case decision date and ruleset version are in case_context.json. Apply the AP payment policy for that ruleset version (full policy text is supplied by the evaluation harness, not in these context files). Determine the payment-exception outcome and the complete set of policy exception tags that fired. Respond with JSON only using the outcome labels and exception tag names defined in the policy.",
+  "context_files": [
+    "context/case_context.json",
+    "context/invoice.json",
+    "context/purchase_order.json",
+    "context/goods_receipt.json",
+    "context/vendor_record.json"
+  ],
+  "case": {
+    "context": {
+      "case_id": "seed-016",
+      "decision_date": "2026-03-01",
+      "ruleset_version": "1.0.0"
+    },
+    "invoice": {
+      "invoice_id": "INV-001",
+      "vendor_id": "V-100",
+      "purchase_order_id": "PO-900",
+      "currency": "CU",
+      "lines": [
+        {
+          "item_id": "ITEM-A",
+          "quantity": "48",
+          "unit_price": "100.00"
+        }
+      ],
+      "stated_net_total": "4800.00"
+    },
+    "purchase_order": {
+      "purchase_order_id": "PO-900",
+      "vendor_id": "V-100",
+      "currency": "CU",
+      "lines": [
+        {
+          "item_id": "ITEM-A",
+          "ordered_quantity": "48",
+          "unit_price": "100.00"
+        }
+      ],
+      "amendments": []
+    },
+    "goods_receipt": {
+      "purchase_order_id": "PO-900",
+      "received_quantities": {
+        "ITEM-A": "48"
+      }
+    },
+    "vendor_record": {
+      "vendor_id": "V-100",
+      "status": "ACTIVE"
+    },
+    "approval_evidence": null
+  },
+  "ground_truth": {
+    "decision": "APPROVE",
+    "evidence_set": []
+  },
+  "verifier": "reference.compute_ground_truth",
+  "tags": [
+    "seed",
+    "tier2",
+    "approval-band"
+  ],
+  "rules_under_test": [
+    "\u00a710.1",
+    "\u00a711.1"
+  ],
+  "ruleset_version": "1.0.0",
+  "case_id": "seed-016",
+  "decision_date": "2026-03-01"
+}

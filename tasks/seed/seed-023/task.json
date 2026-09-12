@@ -1,0 +1,41 @@
+{
+  "id": "seed-023",
+  "schema_version": "1.0.0",
+  "slice": "ap-invoice-reconciliation",
+  "difficulty": 3,
+  "tier_intent": "missing_evidence",
+  "prompt": "Review the supplier invoice case in the attached context files. The case decision date and ruleset version are in case_context.json. Apply the AP payment policy for that ruleset version (full policy text is supplied by the evaluation harness, not in these context files). Determine the payment-exception outcome and the complete set of policy exception tags that fired. Respond with JSON only using the outcome labels and exception tag names defined in the policy.",
+  "context_files": [
+    "context/case_context.json"
+  ],
+  "case": {
+    "context": {
+      "case_id": "seed-023",
+      "decision_date": "2026-03-01",
+      "ruleset_version": "1.0.0"
+    },
+    "invoice": null,
+    "purchase_order": null,
+    "goods_receipt": null,
+    "vendor_record": null,
+    "approval_evidence": null
+  },
+  "ground_truth": {
+    "decision": "HOLD",
+    "evidence_set": [
+      "INVOICE_INCOMPLETE"
+    ]
+  },
+  "verifier": "reference.compute_ground_truth",
+  "tags": [
+    "seed",
+    "tier3",
+    "missing-context"
+  ],
+  "rules_under_test": [
+    "\u00a77.1"
+  ],
+  "ruleset_version": "1.0.0",
+  "case_id": "seed-023",
+  "decision_date": "2026-03-01"
+}

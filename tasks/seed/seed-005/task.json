@@ -1,0 +1,117 @@
+{
+  "id": "seed-005",
+  "schema_version": "1.0.0",
+  "slice": "ap-invoice-reconciliation",
+  "difficulty": 1,
+  "tier_intent": "retrieval",
+  "prompt": "Using only the attached context files, report the effective date of amendment AMD-2 on the purchase order in purchase_order.json. Respond with JSON only: {\"amendment_id\": \"AMD-2\", \"effective_date\": \"<DATE>\"}.",
+  "context_files": [
+    "context/purchase_order.json"
+  ],
+  "case": {
+    "context": {
+      "case_id": "seed-005",
+      "decision_date": "2026-03-01",
+      "ruleset_version": "1.0.0"
+    },
+    "invoice": {
+      "invoice_id": "INV-001",
+      "vendor_id": "V-100",
+      "purchase_order_id": "PO-900",
+      "currency": "CU",
+      "lines": [
+        {
+          "item_id": "ITEM-A",
+          "quantity": "10",
+          "unit_price": "100.00"
+        }
+      ],
+      "stated_net_total": "1000.00"
+    },
+    "purchase_order": {
+      "purchase_order_id": "PO-900",
+      "vendor_id": "V-100",
+      "currency": "CU",
+      "lines": [
+        {
+          "item_id": "ITEM-A",
+          "ordered_quantity": "10",
+          "unit_price": "100.00"
+        }
+      ],
+      "amendments": [
+        {
+          "amendment_id": "AMD-1",
+          "purchase_order_id": "PO-900",
+          "status": "SIGNED",
+          "signing_authority": "PROCUREMENT_MANAGER",
+          "effective_date": "2026-01-15",
+          "changes": {
+            "ITEM-A": {
+              "unit_price": "95.00"
+            }
+          }
+        },
+        {
+          "amendment_id": "AMD-2",
+          "purchase_order_id": "PO-900",
+          "status": "SIGNED",
+          "signing_authority": "PROCUREMENT_DIRECTOR",
+          "effective_date": "2026-02-15",
+          "changes": {
+            "ITEM-A": {
+              "unit_price": "100.00"
+            }
+          }
+        }
+      ]
+    },
+    "goods_receipt": {
+      "purchase_order_id": "PO-900",
+      "received_quantities": {
+        "ITEM-A": "10"
+      }
+    },
+    "vendor_record": {
+      "vendor_id": "V-100",
+      "status": "ACTIVE"
+    },
+    "approval_evidence": null
+  },
+  "ground_truth": {
+    "amendment_id": "AMD-2",
+    "effective_date": "2026-02-15"
+  },
+  "verifier": "retrieval.exact_match",
+  "retrieval_spec": {
+    "fields": {
+      "amendment_id": {
+        "const": "AMD-2"
+      },
+      "effective_date": {
+        "amendment": {
+          "list": [
+            "purchase_order",
+            "amendments"
+          ],
+          "id_field": "amendment_id",
+          "id": "AMD-2",
+          "read": "effective_date"
+        }
+      }
+    }
+  },
+  "tags": [
+    "seed",
+    "tier1",
+    "retrieval",
+    "hard",
+    "amendment"
+  ],
+  "rules_under_test": [
+    "\u00a73.4"
+  ],
+  "ruleset_version": "1.0.0",
+  "case_id": "seed-005",
+  "decision_date": "2026-03-01"
+}

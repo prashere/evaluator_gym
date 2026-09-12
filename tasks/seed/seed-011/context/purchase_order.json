@@ -1,0 +1,26 @@
+{
+  "purchase_order_id": "PO-900",
+  "vendor_id": "V-100",
+  "currency": "CU",
+  "lines": [
+    {
+      "item_id": "ITEM-A",
+      "ordered_quantity": "10",
+      "unit_price": "100.00"
+    }
+  ],
+  "amendments": [
+    {
+      "amendment_id": "AMD-BAD",
+      "purchase_order_id": "PO-900",
+      "status": "SIGNED",
+      "signing_authority": "CFO",
+      "effective_date": "2026-02-01",
+      "changes": {
+        "ITEM-A": {
+          "unit_price": "50.00"
+        }
+      }
+    }
+  ]
+}

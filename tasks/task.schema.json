@@ -9,43 +9,352 @@
     "slice",
     "difficulty",
     "prompt",
+    "context_files",
+    "case",
     "ground_truth",
     "verifier",
-    "tags"
+    "tags",
+    "rules_under_test",
+    "ruleset_version",
+    "case_id",
+    "decision_date"
   ],
   "properties": {
     "id": { "type": "string", "minLength": 1 },
     "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
-    "slice": { "type": "string", "minLength": 1 },
+    "slice": { "type": "string", "const": "ap-invoice-reconciliation" },
     "difficulty": { "type": "integer", "enum": [1, 2, 3] },
+    "tier_intent": {
+      "type": "string",
+      "enum": [
+        "retrieval",
+        "computation",
+        "missing_evidence",
+        "non_determinable",
+        "compound_trap",
+        "precedence_trap"
+      ]
+    },
     "prompt": { "type": "string", "minLength": 1 },
     "context_files": {
       "type": "array",
-      "items": { "type": "string" },
-      "default": []
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
     },
+    "case": { "$ref": "#/$defs/caseBundle" },
     "ground_truth": {
-      "description": "Machine-checkable expected answer (number, label, set, object, or criteria list)."
+      "oneOf": [
+        { "$ref": "#/$defs/reconciliationGroundTruth" },
+        { "$ref": "#/$defs/retrievalGroundTruth" }
+      ]
     },
     "verifier": {
       "type": "string",
-      "description": "Reference function identifier, e.g. reference.compute_payout"
+      "enum": ["reference.compute_ground_truth", "retrieval.exact_match"]
     },
+    "retrieval_spec": { "$ref": "#/$defs/retrievalSpec" },
     "tags": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
     },
-    "trap_reason": {
-      "type": ["string", "null"],
-      "enum": ["rules_silent", "rules_contradictory", "input_absent", null],
-      "description": "Required for difficulty tier 3."
-    }
+    "rules_under_test": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^§" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "ruleset_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "case_id": { "type": "string", "minLength": 1 },
+    "decision_date": { "type": "string", "format": "date" }
   },
   "allOf": [
     {
-      "if": { "properties": { "difficulty": { "const": 3 } } },
-      "then": { "required": ["trap_reason"] }
+      "if": { "properties": { "difficulty": { "const": 1 } }, "required": ["difficulty"] },
+      "then": {
+        "required": ["retrieval_spec", "tier_intent"],
+        "properties": {
+          "tier_intent": { "const": "retrieval" },
+          "verifier": { "const": "retrieval.exact_match" },
+          "ground_truth": { "$ref": "#/$defs/retrievalGroundTruth" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "difficulty": { "enum": [2, 3] } }, "required": ["difficulty"] },
+      "then": {
+        "properties": {
+          "verifier": { "const": "reference.compute_ground_truth" },
+          "ground_truth": { "$ref": "#/$defs/reconciliationGroundTruth" }
+        },
+        "not": { "required": ["retrieval_spec"] }
+      }
     }
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "reconciliationGroundTruth": {
+      "type": "object",
+      "required": ["decision", "evidence_set"],
+      "additionalProperties": false,
+      "properties": {
+        "decision": { "type": "string", "enum": ["APPROVE", "HOLD", "ESCALATE"] },
+        "evidence_set": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidenceTag" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "retrievalGroundTruth": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string"
+      },
+      "not": {
+        "anyOf": [
+          { "required": ["decision"] },
+          { "required": ["evidence_set"] }
+        ]
+      }
+    },
+    "retrievalSpec": {
+      "type": "object",
+      "required": ["fields"],
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["const"],
+                "additionalProperties": false,
+                "properties": {
+                  "const": { "type": "string" }
+                }
+              },
+              {
+                "type": "array",
+                "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "required": ["line_item"],
+                "additionalProperties": false,
+                "properties": {
+                  "line_item": {
+                    "type": "object",
+                    "required": ["list", "match_field", "match", "read"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "list": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "minItems": 1
+                      },
+                      "match_field": { "type": "string" },
+                      "match": { "type": "string" },
+                      "read": { "type": "string" }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["amendment"],
+                "additionalProperties": false,
+                "properties": {
+                  "amendment": {
+                    "type": "object",
+                    "required": ["list", "id_field", "id", "read"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "list": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "minItems": 1
+                      },
+                      "id_field": { "type": "string" },
+                      "id": { "type": "string" },
+                      "read": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "evidenceTag": {
+      "type": "string",
+      "enum": [
+        "INVOICE_INCOMPLETE",
+        "PO_NOT_FOUND",
+        "RECEIPT_NOT_FOUND",
+        "VENDOR_RECORD_NOT_FOUND",
+        "VENDOR_MISMATCH",
+        "CURRENCY_MISMATCH",
+        "LINE_NOT_MATCHED",
+        "ARITHMETIC_MISMATCH",
+        "QUANTITY_TOLERANCE_EXCEEDED",
+        "PRICE_TOLERANCE_EXCEEDED",
+        "VENDOR_AP_HOLD",
+        "STANDARD_APPROVAL_MISSING_OR_INVALID",
+        "PO_CONFLICT_UNRESOLVED",
+        "VENDOR_SUSPENDED",
+        "OUTSIDE_DELEGATION"
+      ]
+    },
+    "caseBundle": {
+      "type": "object",
+      "required": ["context"],
+      "additionalProperties": false,
+      "properties": {
+        "context": { "$ref": "#/$defs/caseContext" },
+        "invoice": { "oneOf": [{ "$ref": "#/$defs/invoice" }, { "type": "null" }] },
+        "purchase_order": { "oneOf": [{ "$ref": "#/$defs/purchaseOrder" }, { "type": "null" }] },
+        "goods_receipt": { "oneOf": [{ "$ref": "#/$defs/goodsReceipt" }, { "type": "null" }] },
+        "vendor_record": { "oneOf": [{ "$ref": "#/$defs/vendorRecord" }, { "type": "null" }] },
+        "approval_evidence": {
+          "oneOf": [{ "$ref": "#/$defs/approvalEvidence" }, { "type": "null" }]
+        }
+      }
+    },
+    "caseContext": {
+      "type": "object",
+      "required": ["case_id", "decision_date", "ruleset_version"],
+      "additionalProperties": false,
+      "properties": {
+        "case_id": { "type": "string", "minLength": 1 },
+        "decision_date": { "type": "string", "format": "date" },
+        "ruleset_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+      }
+    },
+    "invoice": {
+      "type": "object",
+      "required": [
+        "invoice_id",
+        "vendor_id",
+        "purchase_order_id",
+        "currency",
+        "lines",
+        "stated_net_total"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "invoice_id": { "type": "string" },
+        "vendor_id": { "type": "string" },
+        "purchase_order_id": { "type": "string" },
+        "currency": { "type": "string" },
+        "lines": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/invoiceLine" }
+        },
+        "stated_net_total": { "type": "string", "pattern": "^\\d+(\\.\\d{2})?$" }
+      }
+    },
+    "invoiceLine": {
+      "type": "object",
+      "required": ["item_id", "quantity", "unit_price"],
+      "additionalProperties": false,
+      "properties": {
+        "item_id": { "type": "string" },
+        "quantity": { "type": "string", "pattern": "^\\d+(\\.\\d+)?$" },
+        "unit_price": { "type": "string", "pattern": "^\\d+(\\.\\d{2})?$" }
+      }
+    },
+    "purchaseOrder": {
+      "type": "object",
+      "required": ["purchase_order_id", "vendor_id", "currency", "lines", "amendments"],
+      "additionalProperties": false,
+      "properties": {
+        "purchase_order_id": { "type": "string" },
+        "vendor_id": { "type": "string" },
+        "currency": { "type": "string" },
+        "lines": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/poLine" }
+        },
+        "amendments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/amendment" }
+        }
+      }
+    },
+    "poLine": {
+      "type": "object",
+      "required": ["item_id", "ordered_quantity", "unit_price"],
+      "additionalProperties": false,
+      "properties": {
+        "item_id": { "type": "string" },
+        "ordered_quantity": { "type": "string", "pattern": "^\\d+(\\.\\d+)?$" },
+        "unit_price": { "type": "string", "pattern": "^\\d+(\\.\\d{2})?$" }
+      }
+    },
+    "amendment": {
+      "type": "object",
+      "required": ["amendment_id", "purchase_order_id", "status", "changes"],
+      "additionalProperties": false,
+      "properties": {
+        "amendment_id": { "type": "string" },
+        "purchase_order_id": { "type": "string" },
+        "status": { "type": "string", "enum": ["SIGNED", "UNSIGNED"] },
+        "signing_authority": { "type": ["string", "null"] },
+        "effective_date": { "type": ["string", "null"], "format": "date" },
+        "changes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      }
+    },
+    "goodsReceipt": {
+      "type": "object",
+      "required": ["purchase_order_id", "received_quantities"],
+      "additionalProperties": false,
+      "properties": {
+        "purchase_order_id": { "type": "string" },
+        "received_quantities": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "vendorRecord": {
+      "type": "object",
+      "required": ["vendor_id", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "vendor_id": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "AP_HOLD", "SUSPENDED"] }
+      }
+    },
+    "approvalEvidence": {
+      "type": "object",
+      "required": [
+        "invoice_id",
+        "approval_status",
+        "approver",
+        "approver_authority",
+        "approval_date"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "invoice_id": { "type": "string" },
+        "approval_status": { "type": "string" },
+        "approver": { "type": "string" },
+        "approver_authority": { "type": "string" },
+        "approval_date": { "type": "string", "format": "date" }
+      }
+    }
+  }
 }

@@ -1,0 +1,13 @@
+{
+  "purchase_order_id": "PO-900",
+  "vendor_id": "V-100",
+  "currency": "CU",
+  "lines": [
+    {
+      "item_id": "ITEM-A",
+      "ordered_quantity": "10",
+      "unit_price": "100.00"
+    }
+  ],
+  "amendments": []
+}

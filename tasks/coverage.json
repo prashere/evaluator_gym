@@ -1,0 +1,37 @@
+{
+  "ruleset_version": "1.0.0",
+  "minimum_seed_tasks": 23,
+  "minimum_tier1_tasks": 5,
+  "minimum_tier2_tasks": 10,
+  "minimum_tier3_tasks": 3,
+  "tier_definitions": {
+    "1": "Retrieval — answer explicitly present in context; field lookup JSON; verifier retrieval.exact_match",
+    "2": "Computation — complete usable evidence; multi-step reconcile; reference.compute_ground_truth",
+    "3": "Traps — missing, unusable, conflicting, or non-determinable evidence; HOLD or ESCALATE only"
+  },
+  "tasks": [
+    {"id": "seed-001", "tier": 1, "tier_intent": "retrieval", "rules_under_test": ["§3.6"], "section_14_example": null, "notes": "Vendor status lookup"},
+    {"id": "seed-002", "tier": 1, "tier_intent": "retrieval", "rules_under_test": ["§3.3"], "section_14_example": null, "notes": "PO currency lookup"},
+    {"id": "seed-003", "tier": 1, "tier_intent": "retrieval", "rules_under_test": ["§3.5"], "section_14_example": null, "notes": "GR received qty for ITEM-A"},
+    {"id": "seed-004", "tier": 1, "tier_intent": "retrieval", "rules_under_test": ["§3.3"], "section_14_example": null, "notes": "Hard: PO line unit price with ITEM-NOISE distractor"},
+    {"id": "seed-005", "tier": 1, "tier_intent": "retrieval", "rules_under_test": ["§3.4"], "section_14_example": null, "notes": "Hard: amendment AMD-2 effective_date lookup"},
+    {"id": "seed-006", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§5.3", "§9.1", "§10.1"], "section_14_example": null, "notes": "PO noise line; APPROVE without false reconcile"},
+    {"id": "seed-007", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§9.3"], "section_14_example": "Example 2", "notes": "Quantity tolerance exceeded"},
+    {"id": "seed-008", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§9.4"], "section_14_example": null, "notes": "Price tolerance exceeded"},
+    {"id": "seed-009", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§9.4", "§11.2"], "section_14_example": "Example 3", "notes": "Price tolerance + missing approval"},
+    {"id": "seed-010", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§8.1"], "section_14_example": null, "notes": "Later amendment controls price"},
+    {"id": "seed-011", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§8.2"], "section_14_example": null, "notes": "Invalid amendment authority ignored"},
+    {"id": "seed-012", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§9.2", "§11.3"], "section_14_example": "Example 6", "notes": "Stated total misleads delegation band"},
+    {"id": "seed-013", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§7.7", "§9.1"], "section_14_example": "Example 7", "notes": "Unmatched invoice line"},
+    {"id": "seed-014", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§9.4", "§10.3", "§12"], "section_14_example": "Example 4", "notes": "Price tolerance + SUSPENDED precedence"},
+    {"id": "seed-015", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§9.3", "§10.2"], "section_14_example": null, "notes": "AP_HOLD + quantity tolerance compound"},
+    {"id": "seed-016", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§10.1", "§11.1"], "section_14_example": "Example 1", "notes": "48×100=4800 CU band boundary APPROVE"},
+    {"id": "seed-017", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§7.5", "§7.6"], "section_14_example": null, "notes": "Currency + vendor mismatch compound"},
+    {"id": "seed-018", "tier": 2, "tier_intent": "computation", "rules_under_test": ["§9.2", "§11.2"], "section_14_example": null, "notes": "Arithmetic mismatch + missing approval"},
+    {"id": "seed-019", "tier": 3, "tier_intent": "non_determinable", "rules_under_test": ["§8.4", "§8.5"], "section_14_example": "Example 5", "notes": "PO amendment conflict"},
+    {"id": "seed-020", "tier": 3, "tier_intent": "missing_evidence", "rules_under_test": ["§7.3"], "section_14_example": null, "notes": "Receipt qty missing"},
+    {"id": "seed-021", "tier": 3, "tier_intent": "missing_evidence", "rules_under_test": ["§7.2"], "section_14_example": null, "notes": "PO absent"},
+    {"id": "seed-022", "tier": 3, "tier_intent": "missing_evidence", "rules_under_test": ["§7.4"], "section_14_example": null, "notes": "Vendor record absent"},
+    {"id": "seed-023", "tier": 3, "tier_intent": "missing_evidence", "rules_under_test": ["§7.1"], "section_14_example": null, "notes": "Case context only"}
+  ]
+}

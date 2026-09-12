@@ -1,0 +1,89 @@
+{
+  "id": "seed-011",
+  "schema_version": "1.0.0",
+  "slice": "ap-invoice-reconciliation",
+  "difficulty": 2,
+  "tier_intent": "computation",
+  "prompt": "Review the supplier invoice case in the attached context files. The case decision date and ruleset version are in case_context.json. Apply the AP payment policy for that ruleset version (full policy text is supplied by the evaluation harness, not in these context files). Determine the payment-exception outcome and the complete set of policy exception tags that fired. Respond with JSON only using the outcome labels and exception tag names defined in the policy.",
+  "context_files": [
+    "context/case_context.json",
+    "context/invoice.json",
+    "context/purchase_order.json",
+    "context/goods_receipt.json",
+    "context/vendor_record.json"
+  ],
+  "case": {
+    "context": {
+      "case_id": "seed-011",
+      "decision_date": "2026-03-01",
+      "ruleset_version": "1.0.0"
+    },
+    "invoice": {
+      "invoice_id": "INV-001",
+      "vendor_id": "V-100",
+      "purchase_order_id": "PO-900",
+      "currency": "CU",
+      "lines": [
+        {
+          "item_id": "ITEM-A",
+          "quantity": "10",
+          "unit_price": "100.00"
+        }
+      ],
+      "stated_net_total": "1000.00"
+    },
+    "purchase_order": {
+      "purchase_order_id": "PO-900",
+      "vendor_id": "V-100",
+      "currency": "CU",
+      "lines": [
+        {
+          "item_id": "ITEM-A",
+          "ordered_quantity": "10",
+          "unit_price": "100.00"
+        }
+      ],
+      "amendments": [
+        {
+          "amendment_id": "AMD-BAD",
+          "purchase_order_id": "PO-900",
+          "status": "SIGNED",
+          "signing_authority": "CFO",
+          "effective_date": "2026-02-01",
+          "changes": {
+            "ITEM-A": {
+              "unit_price": "50.00"
+            }
+          }
+        }
+      ]
+    },
+    "goods_receipt": {
+      "purchase_order_id": "PO-900",
+      "received_quantities": {
+        "ITEM-A": "10"
+      }
+    },
+    "vendor_record": {
+      "vendor_id": "V-100",
+      "status": "ACTIVE"
+    },
+    "approval_evidence": null
+  },
+  "ground_truth": {
+    "decision": "APPROVE",
+    "evidence_set": []
+  },
+  "verifier": "reference.compute_ground_truth",
+  "tags": [
+    "seed",
+    "tier2",
+    "amendment"
+  ],
+  "rules_under_test": [
+    "\u00a78.2"
+  ],
+  "ruleset_version": "1.0.0",
+  "case_id": "seed-011",
+  "decision_date": "2026-03-01"
+}

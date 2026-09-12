@@ -1,0 +1,38 @@
+{
+  "purchase_order_id": "PO-900",
+  "vendor_id": "V-100",
+  "currency": "CU",
+  "lines": [
+    {
+      "item_id": "ITEM-A",
+      "ordered_quantity": "10",
+      "unit_price": "100.00"
+    }
+  ],
+  "amendments": [
+    {
+      "amendment_id": "AMD-1",
+      "purchase_order_id": "PO-900",
+      "status": "SIGNED",
+      "signing_authority": "PROCUREMENT_MANAGER",
+      "effective_date": "2026-01-15",
+      "changes": {
+        "ITEM-A": {
+          "unit_price": "95.00"
+        }
+      }
+    },
+    {
+      "amendment_id": "AMD-2",
+      "purchase_order_id": "PO-900",
+      "status": "SIGNED",
+      "signing_authority": "PROCUREMENT_DIRECTOR",
+      "effective_date": "2026-02-15",
+      "changes": {
+        "ITEM-A": {
+          "unit_price": "100.00"
+        }
+      }
+    }
+  ]
+}
