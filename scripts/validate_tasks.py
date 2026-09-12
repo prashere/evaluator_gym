@@ -83,7 +83,8 @@ def check_ground_truth(payload: dict) -> list[str]:
     if payload.get("verifier") == "retrieval.exact_match":
         expected = compute_retrieval_ground_truth(payload)
     else:
-        expected = compute_ground_truth(payload)
+        ruleset_version = payload.get("ruleset_version") or payload["case"]["context"]["ruleset_version"]
+        expected = compute_ground_truth(payload, ruleset_version=ruleset_version)
     actual = payload.get("ground_truth")
     if actual != expected:
         return [

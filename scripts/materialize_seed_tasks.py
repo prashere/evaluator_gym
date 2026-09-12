@@ -14,7 +14,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-from evaluator_gym import RULESET_VERSION, SCHEMA_VERSION
+from evaluator_gym import GENERATOR_VERSION, RULESET_VERSION, SCHEMA_VERSION
 from evaluator_gym.generator.case_builder import (
     PROMPT,
     SLICE,
@@ -58,6 +58,7 @@ def _reconciliation_task(
         "tags": tags,
         "rules_under_test": rules_under_test,
         "ruleset_version": RULESET_VERSION,
+        "generator_version": GENERATOR_VERSION,
         "case_id": case["context"]["case_id"],
         "decision_date": case["context"]["decision_date"],
     }
@@ -88,6 +89,7 @@ def _retrieval_task(
         "tags": tags,
         "rules_under_test": rules_under_test,
         "ruleset_version": RULESET_VERSION,
+        "generator_version": GENERATOR_VERSION,
         "case_id": case["context"]["case_id"],
         "decision_date": case["context"]["decision_date"],
     }
@@ -507,7 +509,10 @@ def materialize(*, clean: bool = True) -> list[Path]:
         if spec["difficulty"] == 1:
             spec["ground_truth"] = compute_retrieval_ground_truth(spec)
         else:
-            spec["ground_truth"] = compute_ground_truth({"case": case})
+            spec["ground_truth"] = compute_ground_truth(
+                {"case": case, "ruleset_version": spec["ruleset_version"]},
+                ruleset_version=spec["ruleset_version"],
+            )
 
         _write_context(task_dir, case, spec["context_files"])
         task_path = task_dir / "task.json"
