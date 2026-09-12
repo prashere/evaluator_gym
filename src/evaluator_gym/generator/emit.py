@@ -6,7 +6,7 @@ import random
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from evaluator_gym import RULESET_VERSION, SCHEMA_VERSION
+from evaluator_gym import GENERATOR_VERSION, RULESET_VERSION, SCHEMA_VERSION
 from evaluator_gym.generator.case_builder import (
     PROMPT,
     SLICE,
@@ -47,6 +47,7 @@ class GymTask:
     retrieval_spec: dict[str, Any] | None = None
     rules_under_test: list[str] = field(default_factory=list)
     ruleset_version: str = RULESET_VERSION
+    generator_version: str = GENERATOR_VERSION
     case_id: str = ""
     decision_date: str = ""
     generator_config: dict[str, Any] | None = None
@@ -60,6 +61,7 @@ class GymTask:
             "verifier": self.verifier,
             "slice": self.slice,
             "ruleset_version": self.ruleset_version,
+            "generator_version": self.generator_version,
             "schema_version": self.schema_version,
             "case_id": self.case_id,
             "decision_date": self.decision_date,
@@ -178,7 +180,10 @@ def _emit_one(
             payload = {"case": case, "retrieval_spec": built.retrieval_spec}
             ground_truth = compute_retrieval_ground_truth(payload)
         else:
-            ground_truth = compute_ground_truth({"case": case})
+            ground_truth = compute_ground_truth(
+                {"case": case, "ruleset_version": config.ruleset_version},
+                ruleset_version=config.ruleset_version,
+            )
         if not _ground_truth_valid(ground_truth, built.difficulty):
             continue
         if not _validate_emission(built, ground_truth):
@@ -206,6 +211,8 @@ def _emit_one(
             retrieval_spec=built.retrieval_spec,
             context_files=built.context_files,
             generator_provenance=provenance,
+            ruleset_version=config.ruleset_version,
+            generator_version=config.generator_version,
         )
         return GymTask(
             id=spec["id"],
@@ -221,6 +228,8 @@ def _emit_one(
             case=case,
             retrieval_spec=built.retrieval_spec,
             rules_under_test=built.rules_under_test,
+            ruleset_version=config.ruleset_version,
+            generator_version=config.generator_version,
             case_id=spec["case_id"],
             decision_date=spec["decision_date"],
             generator_config=config.to_dict(),

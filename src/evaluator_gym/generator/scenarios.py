@@ -118,7 +118,7 @@ def _signed_amendment(
 
 
 def scenario_retrieve_vendor_status(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["vendor_record"]["status"] = rng.choice(["ACTIVE", "AP_HOLD", "SUSPENDED"])
     return _built(
         case,
@@ -133,7 +133,7 @@ def scenario_retrieve_vendor_status(rng: random.Random, config: GeneratorConfig,
 
 
 def scenario_retrieve_po_currency(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["purchase_order"]["currency"] = rng.choice(["CU", "EUR", "GBP"])
     case["invoice"]["currency"] = case["purchase_order"]["currency"]
     sync_stated_total(case)
@@ -152,7 +152,7 @@ def scenario_retrieve_po_currency(rng: random.Random, config: GeneratorConfig, t
 def scenario_retrieve_received_quantity(
     rng: random.Random, config: GeneratorConfig, task_id: str
 ) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     qty_val = rng.randint(5, 50)
     case["goods_receipt"]["received_quantities"]["ITEM-A"] = qty(qty_val)
     sync_stated_total(case)
@@ -176,7 +176,7 @@ def scenario_retrieve_received_quantity(
 def scenario_retrieve_po_line_unit_price(
     rng: random.Random, config: GeneratorConfig, task_id: str
 ) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["purchase_order"]["lines"].append(
         {
             "item_id": "ITEM-NOISE",
@@ -212,7 +212,7 @@ def scenario_retrieve_po_line_unit_price(
 def scenario_retrieve_amendment_effective_date(
     rng: random.Random, config: GeneratorConfig, task_id: str
 ) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["purchase_order"]["amendments"] = [
         _signed_amendment(
             amendment_id="AMD-1",
@@ -255,7 +255,7 @@ def scenario_retrieve_amendment_effective_date(
 
 
 def scenario_clean_approve(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     qty_val = rng.randint(5, 20)
     price = rng.choice([Decimal("50"), Decimal("100"), Decimal("150")])
     case["invoice"]["lines"][0]["quantity"] = qty(qty_val)
@@ -268,7 +268,7 @@ def scenario_clean_approve(rng: random.Random, config: GeneratorConfig, task_id:
 
 
 def scenario_extra_po_noise(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["purchase_order"]["lines"].append(
         {
             "item_id": "ITEM-NOISE",
@@ -281,7 +281,7 @@ def scenario_extra_po_noise(rng: random.Random, config: GeneratorConfig, task_id
 
 
 def scenario_low_band_approve(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     qty_val = rng.randint(40, 48)
     price = Decimal("100")
     case["invoice"]["lines"][0]["quantity"] = qty(qty_val)
@@ -294,28 +294,28 @@ def scenario_low_band_approve(rng: random.Random, config: GeneratorConfig, task_
 
 
 def scenario_vendor_suspended(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["vendor_record"]["status"] = "SUSPENDED"
     sync_stated_total(case)
     return _built(case, 2, ["§10.3"], "vendor_suspended")
 
 
 def scenario_vendor_ap_hold(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["vendor_record"]["status"] = "AP_HOLD"
     sync_stated_total(case)
     return _built(case, 2, ["§10.2"], "vendor_ap_hold")
 
 
 def scenario_currency_mismatch(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["invoice"]["currency"] = rng.choice(["USD", "EUR"])
     sync_stated_total(case)
     return _built(case, 2, ["§7.6"], "currency_mismatch")
 
 
 def scenario_vendor_mismatch(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     alt = f"V-{rng.randint(200, 299)}"
     case["invoice"]["vendor_id"] = alt
     case["vendor_record"] = {"vendor_id": alt, "status": "ACTIVE"}
@@ -324,7 +324,7 @@ def scenario_vendor_mismatch(rng: random.Random, config: GeneratorConfig, task_i
 
 
 def scenario_quantity_tolerance(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     ordered = rng.randint(35, 50)
     ordered_d = Decimal(ordered)
     max_allowed = ordered_d + Decimal("0.02") * ordered_d
@@ -341,7 +341,7 @@ def scenario_quantity_tolerance(rng: random.Random, config: GeneratorConfig, tas
 
 
 def scenario_price_tolerance(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     base = Decimal(str(rng.choice([80, 100, 120])))
     bump = base * Decimal("0.02") + Decimal("0.01")
     inv_price = base + bump
@@ -352,7 +352,7 @@ def scenario_price_tolerance(rng: random.Random, config: GeneratorConfig, task_i
 
 
 def scenario_price_and_approval(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     ordered = rng.randint(50, 58)
     base = Decimal("100")
     inv_price = base + Decimal("10")
@@ -366,7 +366,7 @@ def scenario_price_and_approval(rng: random.Random, config: GeneratorConfig, tas
 
 
 def scenario_amendment_later_wins(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["purchase_order"]["amendments"] = [
         _signed_amendment(
             amendment_id="AMD-1",
@@ -388,7 +388,7 @@ def scenario_amendment_later_wins(rng: random.Random, config: GeneratorConfig, t
 
 
 def scenario_arithmetic_and_approval(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     ordered = rng.randint(55, 65)
     price = Decimal("100")
     case["purchase_order"]["lines"][0]["ordered_quantity"] = qty(ordered)
@@ -403,7 +403,7 @@ def scenario_arithmetic_and_approval(rng: random.Random, config: GeneratorConfig
 
 
 def scenario_arithmetic_only(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     sync_stated_total(case)
     verified = Decimal(case["invoice"]["stated_net_total"])
     case["invoice"]["stated_net_total"] = money(verified + Decimal(rng.randint(50, 200)))
@@ -413,7 +413,7 @@ def scenario_arithmetic_only(rng: random.Random, config: GeneratorConfig, task_i
 def scenario_invalid_amendment_authority(
     rng: random.Random, config: GeneratorConfig, task_id: str
 ) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["purchase_order"]["amendments"] = [
         _signed_amendment(
             amendment_id="AMD-BAD",
@@ -428,28 +428,28 @@ def scenario_invalid_amendment_authority(
 
 
 def scenario_po_not_found(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["purchase_order"] = None
     sync_stated_total(case)
     return _built(case, 3, ["§7.2"], "po_not_found")
 
 
 def scenario_invoice_incomplete(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["invoice"]["currency"] = ""
     sync_stated_total(case)
     return _built(case, 3, ["§7.1"], "invoice_incomplete")
 
 
 def scenario_vendor_record_not_found(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["vendor_record"] = None
     sync_stated_total(case)
     return _built(case, 3, ["§7.4"], "vendor_record_not_found")
 
 
 def scenario_po_conflict(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     ordered = rng.randint(90, 110)
     price = Decimal("49")
     case["purchase_order"]["lines"][0]["ordered_quantity"] = qty(ordered)
@@ -486,7 +486,7 @@ def scenario_po_conflict(rng: random.Random, config: GeneratorConfig, task_id: s
 def scenario_po_conflict_unit_price(
     rng: random.Random, config: GeneratorConfig, task_id: str
 ) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["purchase_order"]["amendments"] = [
         _signed_amendment(
             amendment_id="AMD-1",
@@ -514,7 +514,7 @@ def scenario_po_conflict_unit_price(
 
 
 def scenario_outside_delegation(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     # verified must exceed 25_000 CU (§11.3); 76 × 330 = 25_080 minimum
     ordered = rng.randint(76, 100)
     price = Decimal("330")
@@ -530,7 +530,7 @@ def scenario_outside_delegation(rng: random.Random, config: GeneratorConfig, tas
 
 
 def scenario_unmatched_line(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     extra_qty = rng.randint(2, 5)
     extra_price = rng.choice([Decimal("150"), Decimal("200")])
     case["invoice"]["lines"].append(
@@ -542,14 +542,14 @@ def scenario_unmatched_line(rng: random.Random, config: GeneratorConfig, task_id
 
 
 def scenario_receipt_missing(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     del case["goods_receipt"]["received_quantities"]["ITEM-A"]
     sync_stated_total(case)
     return _built(case, 3, ["§7.3"], "receipt_missing")
 
 
 def scenario_precedence_escalate(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     base = Decimal("100")
     inv_price = base + Decimal("2.01")
     case["invoice"]["lines"][0]["unit_price"] = money(inv_price)
@@ -576,7 +576,7 @@ def scenario_missing_context(rng: random.Random, config: GeneratorConfig, task_i
 
 
 def scenario_invoice_empty_lines(rng: random.Random, config: GeneratorConfig, task_id: str) -> BuiltScenario:
-    case = build_base_case(task_id)
+    case = build_base_case(task_id, ruleset_version=config.ruleset_version)
     case["invoice"]["lines"] = []
     case["invoice"]["stated_net_total"] = "0.00"
     return _built(case, 3, ["§7.1"], "invoice_empty_lines")

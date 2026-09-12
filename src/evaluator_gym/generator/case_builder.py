@@ -6,7 +6,7 @@ from copy import deepcopy
 from decimal import Decimal
 from typing import Any
 
-from evaluator_gym import RULESET_VERSION, SCHEMA_VERSION
+from evaluator_gym import GENERATOR_VERSION, RULESET_VERSION, SCHEMA_VERSION
 from evaluator_gym.reference.money import calculated_net_total
 from evaluator_gym.reference.load import parse_case
 
@@ -35,12 +35,17 @@ def qty(value: Decimal | int | float | str) -> str:
     return str(d)
 
 
-def build_base_case(case_id: str, *, decision_date: str = DEFAULT_DECISION_DATE) -> dict[str, Any]:
+def build_base_case(
+    case_id: str,
+    *,
+    decision_date: str = DEFAULT_DECISION_DATE,
+    ruleset_version: str = RULESET_VERSION,
+) -> dict[str, Any]:
     return {
         "context": {
             "case_id": case_id,
             "decision_date": decision_date,
-            "ruleset_version": RULESET_VERSION,
+            "ruleset_version": ruleset_version,
         },
         "invoice": {
             "invoice_id": "INV-001",
@@ -74,7 +79,9 @@ def sync_stated_total(case: dict[str, Any]) -> None:
 
 
 def context_files_for_case(case: dict[str, Any]) -> list[str]:
-    files = ["context/case_context.json", "context/invoice.json"]
+    files = ["context/case_context.json"]
+    if case.get("invoice") is not None:
+        files.append("context/invoice.json")
     if case.get("purchase_order") is not None:
         files.append("context/purchase_order.json")
     if case.get("goods_receipt") is not None:
@@ -101,6 +108,8 @@ def task_dict_from_case(
     retrieval_spec: dict[str, Any] | None = None,
     context_files: list[str] | None = None,
     generator_provenance: dict[str, Any] | None = None,
+    ruleset_version: str = RULESET_VERSION,
+    generator_version: str = GENERATOR_VERSION,
 ) -> dict[str, Any]:
     tag_list = list(tags)
     if f"scenario-{scenario_name}" not in tag_list:
@@ -118,7 +127,8 @@ def task_dict_from_case(
         "verifier": verifier,
         "tags": tag_list,
         "rules_under_test": rules_under_test,
-        "ruleset_version": RULESET_VERSION,
+        "ruleset_version": ruleset_version,
+        "generator_version": generator_version,
         "case_id": case["context"]["case_id"],
         "decision_date": case["context"]["decision_date"],
     }
