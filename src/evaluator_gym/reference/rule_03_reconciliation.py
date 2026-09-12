@@ -8,6 +8,7 @@ from evaluator_gym.reference import tags
 from evaluator_gym.reference.money import calculated_net_total, verified_net_total
 from evaluator_gym.reference.rule_01_availability import matched_item_ids
 from evaluator_gym.reference.rule_02_po_control import ControllingValues
+from evaluator_gym.reference.firing import RuleFire, record
 from evaluator_gym.reference.types import Case, Invoice, PurchaseOrder, UnresolvedField
 
 
@@ -19,6 +20,8 @@ def evaluate_rule_03(
     case: Case,
     po: PurchaseOrder | None,
     controlling: ControllingValues,
+    *,
+    fires: list[RuleFire] | None = None,
 ) -> set[str]:
     fired: set[str] = set()
     invoice = case.invoice
@@ -28,6 +31,8 @@ def evaluate_rule_03(
     calc = calculated_net_total(invoice)
     if invoice.stated_net_total != calc:
         fired.add(tags.ARITHMETIC_MISMATCH)
+        if fires is not None:
+            record(fires, "§9.2", "stated_ne_calculated_total", tags.ARITHMETIC_MISMATCH)
 
     matched = matched_item_ids(invoice, po)
     receipt = case.goods_receipt
@@ -50,6 +55,13 @@ def evaluate_rule_03(
             max_qty = received + (Decimal("0.02") * ctrl_qty)
             if line.quantity > max_qty:
                 fired.add(tags.QUANTITY_TOLERANCE_EXCEEDED)
+                if fires is not None:
+                    record(
+                        fires,
+                        "§9.3",
+                        "invoice_qty_exceeds_max_allowed",
+                        tags.QUANTITY_TOLERANCE_EXCEEDED,
+                    )
 
         if (
             not _is_unresolved(controlling.unresolved, item_id, "unit_price")
@@ -58,6 +70,13 @@ def evaluate_rule_03(
             max_price = ctrl_price * Decimal("1.01")
             if line.unit_price > max_price:
                 fired.add(tags.PRICE_TOLERANCE_EXCEEDED)
+                if fires is not None:
+                    record(
+                        fires,
+                        "§9.4",
+                        "invoice_price_exceeds_max_allowed",
+                        tags.PRICE_TOLERANCE_EXCEEDED,
+                    )
 
     return fired
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from evaluator_gym.reference import tags
+from evaluator_gym.reference.firing import RuleFire, record
 from evaluator_gym.reference.types import Case
 
 
@@ -12,13 +13,17 @@ def _in_ap_manager_band(verified_total: Decimal) -> bool:
     return verified_total > Decimal("5000") and verified_total <= Decimal("25000")
 
 
-def evaluate_rule_05(case: Case, verified_total: Decimal | None) -> set[str]:
+def evaluate_rule_05(
+    case: Case, verified_total: Decimal | None, *, fires: list[RuleFire] | None = None
+) -> set[str]:
     fired: set[str] = set()
     if verified_total is None:
         return fired
 
     if verified_total > Decimal("25000"):
         fired.add(tags.OUTSIDE_DELEGATION)
+        if fires is not None:
+            record(fires, "§11.3", "verified_total_outside_delegation", tags.OUTSIDE_DELEGATION)
         return fired
 
     if not _in_ap_manager_band(verified_total):
@@ -28,6 +33,13 @@ def evaluate_rule_05(case: Case, verified_total: Decimal | None) -> set[str]:
     invoice = case.invoice
     if evidence is None or invoice is None:
         fired.add(tags.STANDARD_APPROVAL_MISSING_OR_INVALID)
+        if fires is not None:
+            record(
+                fires,
+                "§11.2",
+                "approval_missing_or_invalid",
+                tags.STANDARD_APPROVAL_MISSING_OR_INVALID,
+            )
         return fired
 
     valid = (
@@ -38,5 +50,12 @@ def evaluate_rule_05(case: Case, verified_total: Decimal | None) -> set[str]:
     )
     if not valid:
         fired.add(tags.STANDARD_APPROVAL_MISSING_OR_INVALID)
+        if fires is not None:
+            record(
+                fires,
+                "§11.2",
+                "approval_missing_or_invalid",
+                tags.STANDARD_APPROVAL_MISSING_OR_INVALID,
+            )
 
     return fired
