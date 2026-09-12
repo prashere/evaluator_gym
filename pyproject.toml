@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Verifiable evaluation environment for AI agents (Niural take-home gym)."
 requires-python = ">=3.10"
 dependencies = [
-    "verifiers @ git+https://github.com/PrimeIntellect-ai/verifiers.git",
+    "verifiers @ git+https://github.com/PrimeIntellect-ai/verifiers.git@66a60649^1",
     "datasets",
     "pydantic>=2",
     "jsonschema>=4",
@@ -35,6 +35,9 @@ packages = ["src/evaluator_gym"]
 [tool.hatch.build.targets.wheel.sources]
 "src/evaluator_gym" = "evaluator_gym"
 
+[tool.hatch.build.targets.wheel.force-include]
+"src/evaluator_gym/rubric/judge_prompt.txt" = "evaluator_gym/rubric/judge_prompt.txt"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
@@ -42,6 +45,7 @@ pythonpath = ["src", "."]
 markers = [
     "fidelity: independent reference fidelity tests (not circular GT checks)",
     "consistency: generator/reference consistency only",
+    "live: requires GROQ_API_KEY (or OPENAI_API_KEY) and network; opt-in only",
 ]
 
 [tool.ruff]
