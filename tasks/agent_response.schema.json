@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evaluator-gym.local/tasks/agent_response.schema.json",
+  "title": "AgentResponse",
+  "oneOf": [
+    { "$ref": "#/$defs/reconciliationResponse" },
+    { "$ref": "#/$defs/retrievalResponse" }
+  ],
+  "$defs": {
+    "reconciliationResponse": {
+      "type": "object",
+      "required": ["decision", "evidence_set"],
+      "additionalProperties": false,
+      "properties": {
+        "decision": { "type": "string", "enum": ["APPROVE", "HOLD", "ESCALATE"] },
+        "evidence_set": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidenceTag" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "retrievalResponse": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "type": "string" },
+      "not": {
+        "anyOf": [
+          { "required": ["decision"] },
+          { "required": ["evidence_set"] }
+        ]
+      }
+    },
+    "evidenceTag": {
+      "type": "string",
+      "enum": [
+        "INVOICE_INCOMPLETE",
+        "PO_NOT_FOUND",
+        "RECEIPT_NOT_FOUND",
+        "VENDOR_RECORD_NOT_FOUND",
+        "VENDOR_MISMATCH",
+        "CURRENCY_MISMATCH",
+        "LINE_NOT_MATCHED",
+        "ARITHMETIC_MISMATCH",
+        "QUANTITY_TOLERANCE_EXCEEDED",
+        "PRICE_TOLERANCE_EXCEEDED",
+        "VENDOR_AP_HOLD",
+        "STANDARD_APPROVAL_MISSING_OR_INVALID",
+        "PO_CONFLICT_UNRESOLVED",
+        "VENDOR_SUSPENDED",
+        "OUTSIDE_DELEGATION"
+      ]
+    }
+  }
+}
