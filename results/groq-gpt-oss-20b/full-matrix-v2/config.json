@@ -1,0 +1,41 @@
+{
+  "run_id": "full-matrix-v2",
+  "model": "groq/gpt-oss-20b",
+  "provider": "groq",
+  "api_model_id": "openai/gpt-oss-20b",
+  "capability_tier": "lightweight",
+  "provider_tier_label": "OpenAI: lower latency, local or specialized use cases",
+  "eval_matrix": "groq_open_oss_qwen",
+  "mode": "single",
+  "tier": "all",
+  "task_source": "seed",
+  "n": null,
+  "seed": 7,
+  "rollouts": 3,
+  "temperature": 0.7,
+  "max_cost_usd": 5.0,
+  "concurrency": 1,
+  "ruleset_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "generator_version": "1.0.0",
+  "rubric_version": "0.1.2",
+  "judge_model": "openai/gpt-oss-120b",
+  "judge_base_url": "https://api.groq.com/openai/v1",
+  "judge_temperature": 0.0,
+  "judge_prompt_version": "0.1.0",
+  "prompt_hashes": {
+    "single_turn_prompt_hash": "sha256:3fa1659d5a9ceb255480b9a265d7a46e1c9d08c0396fa76a29817d95a345c112",
+    "tool_prompt_hash": "sha256:610e7a2352497757b929a929d07ca05174ab1a26db47b503130b0fb3a96ecced",
+    "judge_prompt_hash": "sha256:6ad9613a455798d6d92e5f5f390ab4baa70596bc869ed6b17f5cdd2b28635f06"
+  },
+  "config_fingerprint": "29d5bd753aa0a06a8a6cf5703c9889dffd8bd6af408b96a1cdf6d182b08df955",
+  "stop_reason": null,
+  "provider_sampling_args": {
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "max_tokens": 2048,
+    "extra_body": {
+      "reasoning_format": "hidden"
+    }
+  }
+}

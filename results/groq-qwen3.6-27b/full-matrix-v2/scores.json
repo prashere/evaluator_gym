@@ -1,0 +1,1221 @@
+{
+  "rollouts_planned": 69,
+  "rollouts_attempted": 69,
+  "parse_success_rate": 0.2898550724637681,
+  "scored_rate": 0.2898550724637681,
+  "format_failure_rate": 0.0,
+  "provider_failure_rate": 0.7101449275362319,
+  "per_rollout": [
+    {
+      "task_id": "seed-001",
+      "rollout_index": 0,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "1/1 fields correct",
+          "correct": 1,
+          "total": 1,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-001",
+      "rollout_index": 1,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "1/1 fields correct",
+          "correct": 1,
+          "total": 1,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-001",
+      "rollout_index": 2,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "1/1 fields correct",
+          "correct": 1,
+          "total": 1,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-002",
+      "rollout_index": 0,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "1/1 fields correct",
+          "correct": 1,
+          "total": 1,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-002",
+      "rollout_index": 1,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "1/1 fields correct",
+          "correct": 1,
+          "total": 1,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-002",
+      "rollout_index": 2,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "1/1 fields correct",
+          "correct": 1,
+          "total": 1,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-003",
+      "rollout_index": 0,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-003",
+      "rollout_index": 1,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-003",
+      "rollout_index": 2,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-004",
+      "rollout_index": 0,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-004",
+      "rollout_index": 1,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-004",
+      "rollout_index": 2,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-005",
+      "rollout_index": 0,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-005",
+      "rollout_index": 1,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-005",
+      "rollout_index": 2,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-006",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "decision_correct": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' == 'APPROVE'"
+        },
+        "evidence_f1": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=1.0000 recall=1.0000",
+          "missing": [],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=1; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-006",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "decision_correct": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' == 'APPROVE'"
+        },
+        "evidence_f1": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=1.0000 recall=1.0000",
+          "missing": [],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=1; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-006",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "decision_correct": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' == 'APPROVE'"
+        },
+        "evidence_f1": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=1.0000 recall=1.0000",
+          "missing": [],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=1; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-007",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "QUANTITY_TOLERANCE_EXCEEDED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-007",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "QUANTITY_TOLERANCE_EXCEEDED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-007",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-008",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-008",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-008",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-009",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-009",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-009",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-010",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-010",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-010",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-011",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-011",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-011",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-012",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-012",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-012",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-013",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-013",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-013",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-014",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-014",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-014",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-015",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-015",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-015",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-016",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-016",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-016",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-017",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-017",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-017",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-018",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-018",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-018",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-019",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-019",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-019",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-020",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-020",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-020",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-021",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-021",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-021",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-022",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-022",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-022",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-023",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-023",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    },
+    {
+      "task_id": "seed-023",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": null,
+      "base_reward": null,
+      "gate_applied": null,
+      "components": null,
+      "failure_class": "provider_error"
+    }
+  ],
+  "per_task": {
+    "seed-001": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 3,
+      "rewards": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "seed-002": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 3,
+      "rewards": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "seed-003": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 3,
+      "rewards": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "seed-004": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 3,
+      "rewards": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "seed-005": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 3,
+      "rewards": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "seed-006": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 3,
+      "rewards": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "seed-007": {
+      "mean": 0.1,
+      "std": 0.0,
+      "n": 2,
+      "rewards": [
+        0.1,
+        0.1
+      ]
+    }
+  },
+  "per_tier": {
+    "1": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 15
+    },
+    "2": {
+      "mean": 0.64,
+      "std": 0.440908153700972,
+      "n": 5
+    }
+  },
+  "overall": {
+    "mean": 0.9099999999999999,
+    "std": 0.27,
+    "n": 20
+  },
+  "conditional_reward": {
+    "mean": 0.9099999999999999,
+    "std": 0.27,
+    "n": 20
+  },
+  "outcome_rates": {
+    "rollouts_attempted": 69,
+    "rollouts_total": 69,
+    "rollouts_planned": 69,
+    "scored_count": 20,
+    "scored_rate": 0.2898550724637681,
+    "parse_success_rate": 0.2898550724637681,
+    "format_failure_count": 0,
+    "format_failure_rate": 0.0,
+    "provider_failure_count": 49,
+    "provider_failure_rate": 0.7101449275362319,
+    "scoring_failure_count": 0,
+    "scoring_failure_rate": 0.0,
+    "non_scored_count": 49,
+    "non_scored_rate": 0.7101449275362319,
+    "infrastructure_failure_count": 0,
+    "infrastructure_failure_rate": 0.0,
+    "conditional_reward": {
+      "mean": 0.9099999999999999,
+      "n": 20
+    },
+    "overall_usable": {
+      "mean": 0.263768115942029,
+      "definition": "conditional_reward.mean * scored_rate"
+    },
+    "run_validity": {
+      "status": "valid",
+      "reason": null
+    }
+  },
+  "overall_usable": {
+    "mean": 0.263768115942029,
+    "definition": "conditional_reward.mean * scored_rate"
+  },
+  "run_validity": {
+    "status": "valid",
+    "reason": null
+  },
+  "infrastructure_failure_rate": 0.0
+}
