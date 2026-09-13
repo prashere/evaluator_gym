@@ -14,8 +14,8 @@ from evaluator_gym.generator.case_builder import case_fingerprint
 from evaluator_gym.generator.config import GeneratorConfig
 from evaluator_gym.generator.emit import generate_taskset_from_config
 from evaluator_gym.task_loader import load_generated_tasks, to_dataset_row
+from evaluator_gym.versions import RUBRIC_VERSION
 
-PHASE07_RUBRIC_VERSION = "0.1.2"
 TRAIN_SEED = 7001
 TRAIN_N = 30
 HELDOUT_POOL_SEED = 9101
@@ -25,10 +25,16 @@ GROUP_SIZE = 4
 MAX_RETRIES = 3
 MAX_COMPLETION_TOKENS = 1024
 EVAL_MAX_TOKENS_DEFAULT = 1000
-CURRICULUM_TIER1_STEPS = 10
-TRAIN_STEPS = 30
-HELDOUT_ROLLOUTS = 3
-BETAS = (1e-5, 1e-3)
+CURRICULUM_TIER2_STEPS = 5
+CURRICULUM_TIER3_STEPS = 10
+TRAIN_STEPS = 15
+SMOKE_STEPS = 5
+HELDOUT_ROLLOUTS = 1
+MIN_REWARD_STD = 0.05
+TRAINING_TIERS = (2, 3)
+BETAS = (1e-5, 1e-2)
+RUN_SEED = 20260913
+PREFLIGHT_PROBES_PER_TASK = 6
 DEFAULT_OUTPUT_ROOT = Path("/content/drive/MyDrive/evaluator-gym-phase07")
 
 
@@ -161,6 +167,14 @@ def is_degenerate_group(rewards: list[float], *, tol: float = 1e-9) -> bool:
     return max(rewards) - min(rewards) <= tol
 
 
+def has_sufficient_reward_variance(
+    rewards: list[float], *, min_std: float = MIN_REWARD_STD
+) -> bool:
+    if len(rewards) < 2:
+        return False
+    return stdev(rewards) >= min_std
+
+
 def compute_group_advantages(rewards: list[float], *, eps: float = 1e-4) -> list[float]:
     mean = fmean(rewards)
     spread = stdev(rewards) if len(rewards) > 1 else 0.0
@@ -168,11 +182,56 @@ def compute_group_advantages(rewards: list[float], *, eps: float = 1e-4) -> list
 
 
 def trainable_task_ids_from_preflight(preflight: dict[str, Any]) -> set[str]:
-    return {
-        task_id
-        for task_id, row in preflight.get("tasks", {}).items()
-        if row.get("scored", 0) > 0
-    }
+    eligible: set[str] = set()
+    for task_id, row in preflight.get("tasks", {}).items():
+        if row.get("tier") not in TRAINING_TIERS:
+            continue
+        rewards = row.get("scored_rewards") or []
+        if len(set(rewards)) >= 2:
+            eligible.add(task_id)
+    return eligible
+
+
+def curriculum_tier_for_step(step: int) -> int | None:
+    step_number = step + 1
+    if step_number <= CURRICULUM_TIER2_STEPS:
+        return 2
+    if step_number <= CURRICULUM_TIER3_STEPS:
+        return 3
+    return None
+
+
+def build_training_schedule(
+    trainable_ids: set[str],
+    train_rows: list[TaskRow],
+    total_steps: int,
+) -> list[TaskRow | None]:
+    pool_by_tier: dict[int, list[TaskRow]] = {2: [], 3: []}
+    for row in train_rows:
+        if row.task_id in trainable_ids and row.tier in TRAINING_TIERS:
+            pool_by_tier[row.tier].append(row)
+    for tier in TRAINING_TIERS:
+        pool_by_tier[tier].sort(key=lambda row: row.task_id)
+
+    mixed_pool = pool_by_tier[2] + pool_by_tier[3]
+    schedule: list[TaskRow | None] = []
+    tier2_index = 0
+    tier3_index = 0
+    mixed_index = 0
+    for step in range(total_steps):
+        tier = curriculum_tier_for_step(step)
+        if tier == 2:
+            pool = pool_by_tier[2]
+            schedule.append(pool[tier2_index % len(pool)] if pool else None)
+            tier2_index += 1
+        elif tier == 3:
+            pool = pool_by_tier[3]
+            schedule.append(pool[tier3_index % len(pool)] if pool else None)
+            tier3_index += 1
+        else:
+            schedule.append(mixed_pool[mixed_index % len(mixed_pool)] if mixed_pool else None)
+            mixed_index += 1
+    return schedule
 
 
 def select_training_task(
@@ -180,16 +239,18 @@ def select_training_task(
     train_rows: list[TaskRow],
     trainable_ids: set[str],
     *,
-    curriculum_tier1_steps: int = CURRICULUM_TIER1_STEPS,
+    schedule: list[TaskRow | None] | None = None,
 ) -> TaskRow | None:
-    pool = [row for row in train_rows if row.task_id in trainable_ids]
-    if not pool:
+    if schedule is not None:
+        if 0 <= step < len(schedule):
+            return schedule[step]
         return None
-    if step < curriculum_tier1_steps:
-        tier1 = [row for row in pool if row.tier == 1]
-        if tier1:
-            return tier1[step % len(tier1)]
-    return pool[step % len(pool)]
+    rows = build_training_schedule(trainable_ids, train_rows, step + 1)
+    return rows[step] if step < len(rows) else None
+
+
+def should_save_checkpoint(_step_index: int, _total_steps: int, *, interval: int = 1) -> bool:
+    return interval == 1
 
 
 def summarize_rejections(
@@ -214,47 +275,69 @@ def summarize_rejections(
     }
 
 
+def decide_training_step(
+    *,
+    rewards: list[float] | None,
+    group_complete: bool,
+) -> tuple[bool, str | None]:
+    if not group_complete or rewards is None:
+        return False, "incomplete_group"
+    if is_degenerate_group(rewards):
+        return False, "low_variance_group"
+    if not has_sufficient_reward_variance(rewards):
+        return False, "low_variance_group"
+    return True, None
+
+
 def build_training_metric(
     *,
-    step: int,
-    task: TaskRow,
-    rewards: list[float],
-    kl: float,
-    entropy: float,
-    mean_completion_length: float,
+    nominal_step: int,
+    task: TaskRow | None,
+    rewards: list[float] | None,
+    kl: float | None,
+    entropy: float | None,
+    mean_completion_length: float | None,
     optimizer_applied: bool,
     skip_reason: str | None,
+    group_rewards: list[float] | None = None,
 ) -> dict[str, Any]:
-    reward_std = stdev(rewards) if len(rewards) > 1 else 0.0
-    degenerate = is_degenerate_group(rewards)
-    loss = None
-    if optimizer_applied and not degenerate:
-        advantages = compute_group_advantages(rewards)
-        loss = 0.0 if all(abs(value) < 1e-12 for value in advantages) else None
-    return {
-        "step": step,
-        "task_id": task.task_id,
-        "tier": task.tier,
-        "mean_reward": fmean(rewards),
-        "reward_std": reward_std,
-        "kl": kl if optimizer_applied else None,
-        "entropy": entropy if optimizer_applied else None,
-        "mean_completion_length": mean_completion_length,
-        "exact_pass_rate": sum(reward == 1.0 for reward in rewards) / len(rewards),
-        "tier_1_pass_rate": sum(reward == 1.0 for reward in rewards) / len(rewards)
-        if task.tier == 1
-        else None,
-        "tier_2_pass_rate": sum(reward == 1.0 for reward in rewards) / len(rewards)
-        if task.tier == 2
-        else None,
-        "tier_3_pass_rate": sum(reward == 1.0 for reward in rewards) / len(rewards)
-        if task.tier == 3
-        else None,
-        "degenerate_group": float(degenerate),
+    metric: dict[str, Any] = {
+        "nominal_step": nominal_step,
+        "task_id": task.task_id if task else None,
+        "tier": task.tier if task else None,
         "optimizer_applied": optimizer_applied,
         "skip_reason": skip_reason,
-        "loss": loss,
+        "group_rewards": group_rewards,
     }
+    if rewards is None:
+        return metric
+    reward_std = stdev(rewards) if len(rewards) > 1 else 0.0
+    degenerate = is_degenerate_group(rewards)
+    metric.update(
+        {
+            "mean_reward": fmean(rewards),
+            "reward_std": reward_std,
+            "kl": kl if optimizer_applied else None,
+            "entropy": entropy if optimizer_applied else None,
+            "mean_completion_length": mean_completion_length,
+            "exact_pass_rate": sum(reward == 1.0 for reward in rewards) / len(rewards),
+            "tier_1_pass_rate": sum(reward == 1.0 for reward in rewards) / len(rewards)
+            if task and task.tier == 1
+            else None,
+            "tier_2_pass_rate": sum(reward == 1.0 for reward in rewards) / len(rewards)
+            if task and task.tier == 2
+            else None,
+            "tier_3_pass_rate": sum(reward == 1.0 for reward in rewards) / len(rewards)
+            if task and task.tier == 3
+            else None,
+            "degenerate_group": float(degenerate),
+            "loss": None,
+        }
+    )
+    if optimizer_applied and not degenerate:
+        advantages = compute_group_advantages(rewards)
+        metric["loss"] = 0.0 if all(abs(value) < 1e-12 for value in advantages) else None
+    return metric
 
 
 def summarize_preflight(probes: list[dict[str, Any]]) -> dict[str, Any]:
@@ -263,12 +346,15 @@ def summarize_preflight(probes: list[dict[str, Any]]) -> dict[str, Any]:
         by_task.setdefault(row["task_id"], []).append(row)
     tasks: dict[str, Any] = {}
     for task_id, rows in by_task.items():
-        scored = [row for row in rows if row.get("reward") is not None]
+        scored_rows = [row for row in rows if row.get("reward") is not None]
+        scored_rewards = [float(row["reward"]) for row in scored_rows]
         tasks[task_id] = {
             "tier": rows[0]["tier"],
             "attempts": len(rows),
-            "scored": len(scored),
-            "parse_rate": len(scored) / len(rows),
+            "scored": len(scored_rows),
+            "scored_rewards": scored_rewards,
+            "reward_unique_count": len(set(scored_rewards)),
+            "parse_rate": len(scored_rows) / len(rows),
             "error_classes": dict(
                 Counter(
                     row["parse_result"]["error_class"]
@@ -279,7 +365,28 @@ def summarize_preflight(probes: list[dict[str, Any]]) -> dict[str, Any]:
         }
     trainable = trainable_task_ids_from_preflight({"tasks": tasks})
     return {
+        "selection_method": "adaptive_variance_qualified",
+        "rubric_version": RUBRIC_VERSION,
         "tasks": tasks,
         "trainable_task_ids": sorted(trainable),
         "trainable_by_tier": dict(Counter(tasks[task_id]["tier"] for task_id in trainable)),
+    }
+
+
+def validate_completion_token_limit(
+    scored_lengths: list[int],
+    *,
+    limit: int = MAX_COMPLETION_TOKENS,
+) -> dict[str, Any]:
+    if not scored_lengths:
+        return {"limit": limit, "scored_count": 0, "p95": None, "max": None, "within_limit": True}
+    ordered = sorted(scored_lengths)
+    p95_index = max(0, int(len(ordered) * 0.95) - 1)
+    maximum = ordered[-1]
+    return {
+        "limit": limit,
+        "scored_count": len(ordered),
+        "p95": ordered[p95_index],
+        "max": maximum,
+        "within_limit": maximum <= limit,
     }

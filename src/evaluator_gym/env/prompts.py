@@ -54,7 +54,9 @@ def format_response_contract(
     return (
         "Required response (JSON object only; use property name evidence_set exactly, "
         "not \"evidence\"; no additional keys):\n"
-        '{"decision": "APPROVE", "evidence_set": []}'
+        '{"decision": "APPROVE", "evidence_set": []}\n'
+        "evidence_set must be a JSON array of tag name strings only "
+        '(e.g. ["ARITHMETIC_MISMATCH"]), not objects.'
     )
 
 
