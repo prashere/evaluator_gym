@@ -635,11 +635,45 @@ FALLBACK_BY_TIER: dict[int, ScenarioFn] = {
     3: scenario_receipt_missing,
 }
 
+SCENARIO_NAME_BY_FN: dict[ScenarioFn, str] = {
+    fn: fn.__name__[len("scenario_") :]
+    for fn in ALL_SCENARIOS
+}
 
-def pick_difficulty(index: int, tier_filter: str) -> int:
-    if tier_filter == "all":
-        return (index % 3) + 1
-    return int(tier_filter)
+SCENARIOS_BY_FAMILY: dict[str, list[ScenarioFn]] = {}
+for _fn in ALL_SCENARIOS:
+    _name = SCENARIO_NAME_BY_FN[_fn]
+    _family_id = SCENARIO_FAMILY[_name]
+    SCENARIOS_BY_FAMILY.setdefault(_family_id, []).append(_fn)
+
+
+def scenario_pool_for_tier(difficulty: int, family_ids: tuple[str, ...] | None) -> list[ScenarioFn]:
+    pool = list(SCENARIOS_BY_TIER[difficulty])
+    if not family_ids:
+        return pool
+    allowed = set(family_ids)
+    return [_fn for _fn in pool if SCENARIO_FAMILY[SCENARIO_NAME_BY_FN[_fn]] in allowed]
+
+
+def allowed_tiers_for_families(family_ids: tuple[str, ...] | None) -> tuple[int, ...]:
+    if not family_ids:
+        return (1, 2, 3)
+    from evaluator_gym.generator.families import FAMILIES
+
+    tiers = sorted({FAMILIES[fid].tier for fid in family_ids if fid in FAMILIES})
+    return tuple(tiers) if tiers else (1, 2, 3)
+
+
+def pick_difficulty(
+    index: int,
+    tier_filter: str,
+    *,
+    family_ids: tuple[str, ...] | None = None,
+) -> int:
+    if tier_filter != "all":
+        return int(tier_filter)
+    tiers = allowed_tiers_for_families(family_ids)
+    return tiers[index % len(tiers)]
 
 
 def pick_scenario_fn(rng: random.Random, difficulty: int, index: int) -> ScenarioFn:

@@ -28,9 +28,16 @@ def main() -> int:
         default=None,
         help="Write task.json files for debugging (not used in CI)",
     )
+    parser.add_argument(
+        "--family-ids",
+        type=str,
+        default="",
+        help="Comma-separated seed_families.json ids to restrict scenario pool",
+    )
     args = parser.parse_args()
 
-    config = GeneratorConfig(seed=args.seed, n=args.n, tier=args.tier)
+    family_ids = tuple(x.strip() for x in args.family_ids.split(",") if x.strip()) or None
+    config = GeneratorConfig(seed=args.seed, n=args.n, tier=args.tier, family_ids=family_ids)
     tasks = generate_taskset_from_config(config)
 
     if args.stats:

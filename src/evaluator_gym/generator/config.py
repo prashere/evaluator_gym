@@ -13,6 +13,7 @@ class GeneratorConfig:
     n: int = 100
     tier: str = "all"
     max_invoice_lines: int = 3
+    family_ids: tuple[str, ...] | None = None
     ruleset_version: str = RULESET_VERSION
     generator_version: str = GENERATOR_VERSION
 
@@ -27,6 +28,7 @@ class GeneratorConfig:
         n: int = 100,
         tier: str = "all",
         max_invoice_lines: int = 3,
+        family_ids: tuple[str, ...] | None = None,
         ruleset_version: str = RULESET_VERSION,
         generator_version: str = GENERATOR_VERSION,
     ) -> GeneratorConfig:
@@ -35,6 +37,7 @@ class GeneratorConfig:
             n=n,
             tier=tier,
             max_invoice_lines=max_invoice_lines,
+            family_ids=family_ids,
             ruleset_version=ruleset_version,
             generator_version=generator_version,
         )

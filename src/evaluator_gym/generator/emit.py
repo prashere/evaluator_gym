@@ -17,10 +17,10 @@ from evaluator_gym.generator.config import GeneratorConfig
 from evaluator_gym.generator.families import get_family, validate_built_against_family
 from evaluator_gym.generator.scenarios import (
     FALLBACK_BY_TIER,
-    SCENARIOS_BY_TIER,
     ScenarioFn,
     build_scenario,
     pick_difficulty,
+    scenario_pool_for_tier,
 )
 from evaluator_gym.generator.tier_validation import TierValidationError, validate_tier_semantics
 from evaluator_gym.reference.engine import compute_ground_truth
@@ -153,10 +153,17 @@ def _emit_one(
     index: int,
     seen_fingerprints: set[str],
 ) -> GymTask:
-    difficulty = pick_difficulty(index, config.tier)
+    difficulty = pick_difficulty(index, config.tier, family_ids=config.family_ids)
     task_id = f"gen-{config.seed}-{index:04d}"
-    pool: list[ScenarioFn] = list(SCENARIOS_BY_TIER[difficulty])
-    pool.append(FALLBACK_BY_TIER[difficulty])
+    pool: list[ScenarioFn] = scenario_pool_for_tier(difficulty, config.family_ids)
+    if not pool:
+        raise RuntimeError(
+            f"no scenarios for tier {difficulty} with family_ids={config.family_ids!r}"
+        )
+    if config.family_ids is None:
+        fallback = FALLBACK_BY_TIER[difficulty]
+        if fallback not in pool:
+            pool.append(fallback)
     start = (index + rng.randint(0, 9999)) % len(pool)
 
     for attempt in range(len(pool)):
