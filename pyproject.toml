@@ -21,7 +21,6 @@ dev = [
     "ruff>=0.8",
     "hypothesis>=6",
 ]
-
 [build-system]
 requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
