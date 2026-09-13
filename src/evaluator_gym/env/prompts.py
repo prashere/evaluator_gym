@@ -19,6 +19,8 @@ class ToolPromptInput:
     document_ids: tuple[str, ...]
     tier: int
     policy_via_tool: bool
+    response_shape: ResponseShape
+    expected_response_keys: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -31,6 +33,39 @@ class SingleTurnPromptInput:
     tier: int
     context_documents: tuple[tuple[str, str], ...]
     policy_text: str | None
+    response_shape: ResponseShape
+    expected_response_keys: tuple[str, ...]
+
+
+def format_response_contract(
+    *,
+    response_shape: ResponseShape,
+    expected_response_keys: tuple[str, ...] = (),
+) -> str:
+    if response_shape == "retrieval":
+        if not expected_response_keys:
+            raise ValueError("retrieval contract requires expected_response_keys")
+        example = {key: "<string>" for key in sorted(expected_response_keys)}
+        return (
+            "Required response (JSON object only; all values must be strings; "
+            "exactly these keys, no additional keys):\n"
+            f"{json.dumps(example, sort_keys=True)}"
+        )
+    return (
+        "Required response (JSON object only; use property name evidence_set exactly, "
+        "not \"evidence\"; no additional keys):\n"
+        '{"decision": "APPROVE", "evidence_set": []}'
+    )
+
+
+def response_contract_example_json(
+    *,
+    response_shape: ResponseShape,
+    expected_response_keys: tuple[str, ...] = (),
+) -> dict[str, object]:
+    if response_shape == "retrieval":
+        return {key: "example" for key in sorted(expected_response_keys)}
+    return {"decision": "APPROVE", "evidence_set": []}
 
 
 def _basename(path: str) -> str:
@@ -51,7 +86,12 @@ def build_tool_prompt(input: ToolPromptInput) -> str:
     if input.policy_via_tool:
         lines.append("Use read_policy() for the full AP payment policy text.")
     lines.append(input.instruction)
-    lines.append("Respond with JSON only in the format specified in the task instruction.")
+    lines.append(
+        format_response_contract(
+            response_shape=input.response_shape,
+            expected_response_keys=input.expected_response_keys,
+        )
+    )
     return "\n".join(lines)
 
 
@@ -60,7 +100,11 @@ def build_single_turn_messages(input: SingleTurnPromptInput) -> list[dict[str, s
     for filename, text in input.context_documents:
         context_blocks.append(f"--- {filename} ---\n{text}")
     context_section = "\n\n".join(context_blocks)
-    user_content = f"{input.instruction}\n\n{context_section}"
+    contract = format_response_contract(
+        response_shape=input.response_shape,
+        expected_response_keys=input.expected_response_keys,
+    )
+    user_content = f"{input.instruction}\n\n{contract}\n\n{context_section}"
 
     if input.policy_text is not None:
         return [

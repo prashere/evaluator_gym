@@ -9,6 +9,7 @@ FailureClass = str
 PARSER_MALFORMED = "parser_malformed"
 PARSER_SCHEMA = "parser_schema"
 PARSER_KEY_MISMATCH = "parser_key_mismatch"
+PROVIDER_EMPTY_COMPLETION = "provider_empty_completion"
 TOOL_ERROR = "tool_error"
 SETUP_FAILED = "setup_failed"
 PROVIDER_RETRIED = "provider_retried"
