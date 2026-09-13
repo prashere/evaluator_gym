@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0",
+  "purpose": "Held-out generated eval — separate from the 23 audited seed benchmark. Stresses precedence, authority, conflict, interacting rules, and missing evidence.",
+  "default_run_id": "generated-holdout-v1",
+  "generator": {
+    "seed": 9001,
+    "n": 30,
+    "tier": "all",
+    "max_invoice_lines": 3,
+    "family_ids": [
+      "precedence_escalate",
+      "outside_delegation",
+      "po_conflict_same_date",
+      "price_and_approval",
+      "missing_context"
+    ]
+  },
+  "minimum_per_tier": {
+    "1": 0,
+    "2": 5,
+    "3": 5
+  },
+  "generated_task_ids": []
+}

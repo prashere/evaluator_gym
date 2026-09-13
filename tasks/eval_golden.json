@@ -1,0 +1,58 @@
+{
+  "version": "1.0.0",
+  "purpose": "Fixed golden regression suite — stratified seed subset between mini-matrix (3) and full matrix (23). Do not change task ids without updating rationale and re-baselining results.",
+  "default_run_id": "golden-matrix-b",
+  "minimum_per_tier": { "1": 2, "2": 5, "3": 3 },
+  "tasks": [
+    {
+      "id": "seed-001",
+      "tier": 1,
+      "rationale": "Baseline retrieval — vendor status from vendor_record.json"
+    },
+    {
+      "id": "seed-005",
+      "tier": 1,
+      "rationale": "Hard retrieval — amendment effective_date with competing amendments"
+    },
+    {
+      "id": "seed-016",
+      "tier": 2,
+      "rationale": "§14 Example 1 — clean APPROVE path"
+    },
+    {
+      "id": "seed-007",
+      "tier": 2,
+      "rationale": "§14 Example 2 — quantity tolerance HOLD"
+    },
+    {
+      "id": "seed-009",
+      "tier": 2,
+      "rationale": "§14 Example 3 — compound price tolerance + missing approval"
+    },
+    {
+      "id": "seed-014",
+      "tier": 2,
+      "rationale": "§14 Example 4 — ESCALATE precedence (price + vendor SUSPENDED)"
+    },
+    {
+      "id": "seed-013",
+      "tier": 2,
+      "rationale": "§14 Example 7 — unmatched line, no false tolerance tag"
+    },
+    {
+      "id": "seed-019",
+      "tier": 3,
+      "rationale": "§14 Example 5 — non-determinable PO conflict (same-date amendments)"
+    },
+    {
+      "id": "seed-021",
+      "tier": 3,
+      "rationale": "Missing evidence — purchase order absent"
+    },
+    {
+      "id": "seed-023",
+      "tier": 3,
+      "rationale": "Missing evidence — case context only (minimal files)"
+    }
+  ]
+}
