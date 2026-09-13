@@ -183,6 +183,8 @@ def _build_loaded_task(
         document_ids=doc_ids,
         tier=tier,
         policy_via_tool=tier >= 2,
+        response_shape=response_shape,
+        expected_response_keys=expected_keys,
     )
     single_turn_input = SingleTurnPromptInput(
         task_id=task_id,
@@ -193,6 +195,8 @@ def _build_loaded_task(
         tier=tier,
         context_documents=context_tuples,
         policy_text=policy_text,
+        response_shape=response_shape,
+        expected_response_keys=expected_keys,
     )
 
     return LoadedTask(
@@ -295,7 +299,7 @@ def load_tasks(
     *,
     task_source: Literal["seed", "generated"] = "seed",
     tier: str = "all",
-    n: int = 100,
+    n: int | None = None,
     seed: int = 7,
     seed_dir: Path = DEFAULT_SEED_DIR,
     rules_root: Path = DEFAULT_RULES_ROOT,
@@ -303,17 +307,18 @@ def load_tasks(
 ) -> list[LoadedTask]:
     validate_task_source(task_source)
     validate_tier(tier)
+    effective_n = n if n is not None else (100 if task_source == "generated" else None)
     if task_source == "seed":
         return load_seed_tasks(
             seed_dir=seed_dir,
             tier=tier,
-            n=n,
+            n=effective_n,
             seed=seed,
             rules_root=rules_root,
             allow_empty=allow_empty,
         )
     return load_generated_tasks(
-        n=n,
+        n=effective_n if effective_n is not None else 100,
         seed=seed,
         tier=tier,
         rules_root=rules_root,
