@@ -1,4 +1,3 @@
-"""Extract display fields from transcript strings — presentation only."""
 
 from __future__ import annotations
 
@@ -37,8 +36,6 @@ def extract_messages(messages: Any) -> dict[str, Any]:
         elif role == "user" and content:
             user_parts.append(content)
     user_text = "\n\n".join(user_parts)
-    if len(user_text) > 800:
-        user_text = user_text[:800] + "…"
     return {"user_excerpt": user_text or None, "has_system": has_system}
 
 

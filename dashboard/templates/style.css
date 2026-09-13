@@ -290,6 +290,12 @@ tr.row-baseline td:first-child { color: #495057; }
 }
 .chain-step h4 { margin: 0 0 0.35rem; font-size: 0.85rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.04em; }
 
+.inspector .chain-step pre {
+  max-height: min(70vh, 960px);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 pre {
   background: #f1f3f5;
   padding: 0.6rem;
