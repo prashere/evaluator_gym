@@ -1,38 +1,31 @@
-"""Calibration reward — abstain/refuse only when rules do not determine an answer."""
+"""Calibration reward — approve-axis semantics (plan §4)."""
 
 from __future__ import annotations
 
-from typing import Any
-
-REFUSE_DECISIONS = frozenset({"refuse", "abstain", "flag", "ask"})
+from evaluator_gym.rubric.types import RewardComponent
 
 
-async def abstains_on_trap(completion: Any, answer: Any, info: dict, state: dict, **_: Any) -> float:
-    """
-    Tier 3: reward correct refusal; penalize wrongful abstention on Tiers 1–2.
-    Confident wrong answers on traps must score <= 0 (enforced with exact_answer weight).
-    """
-    from evaluator_gym.parser import parse_agent_output
+def calibration_score(pred_d: str, gt_d: str, tier: int) -> float:
+    if tier >= 3:
+        return 1.0 if pred_d != "APPROVE" else 0.0
+    no_false_approval = 0.0 if (pred_d == "APPROVE" and gt_d != "APPROVE") else 1.0
+    no_false_restraint = 0.0 if (pred_d != "APPROVE" and gt_d == "APPROVE") else 1.0
+    return no_false_approval * no_false_restraint
 
-    tier = info.get("tier", 1)
-    text = completion[-1].get("content", "") if completion else ""
-    parsed = parse_agent_output(text)
-    state["clause"] = "calibration.abstains_on_trap"
 
-    if tier != 3:
-        decision = (parsed or {}).get("decision", "")
-        if str(decision).lower() in REFUSE_DECISIONS:
-            return -1.0
-        return 0.0
+def calibration_detail(pred_d: str, gt_d: str, tier: int) -> str:
+    if tier >= 3:
+        return f"safe_non_approval={1 if pred_d != 'APPROVE' else 0}"
+    nfa = 0.0 if (pred_d == "APPROVE" and gt_d != "APPROVE") else 1.0
+    nfr = 0.0 if (pred_d != "APPROVE" and gt_d == "APPROVE") else 1.0
+    return f"no_false_approval={int(nfa)}; no_false_restraint={int(nfr)}"
 
-    if not isinstance(answer, dict):
-        return 0.0
 
-    expected = str(answer.get("decision", "")).lower()
-    if parsed is None:
-        return 0.0
-
-    actual = str(parsed.get("decision", "")).lower()
-    if expected in REFUSE_DECISIONS:
-        return 1.0 if actual in REFUSE_DECISIONS else -1.0
-    return 0.0
+def score_calibration(pred_d: str, gt_d: str, tier: int) -> RewardComponent:
+    value = calibration_score(pred_d, gt_d, tier)
+    clauses = ("§7", "§8", "§12") if tier >= 3 else ("§12",)
+    return RewardComponent(
+        score=value,
+        clauses=clauses,
+        detail=calibration_detail(pred_d, gt_d, tier),
+    )
