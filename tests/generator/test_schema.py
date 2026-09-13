@@ -35,6 +35,7 @@ def test_sample_generated_tasks_validate_against_schema(task_schema: dict):
             "tags": task.tags,
             "rules_under_test": task.rules_under_test,
             "ruleset_version": task.ruleset_version,
+            "generator_version": task.generator_version,
             "case_id": task.case_id,
             "decision_date": task.decision_date,
         }

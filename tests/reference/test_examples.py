@@ -1,6 +1,6 @@
 """Fidelity pass — RULES.md §14 Examples 1–7."""
 
-from evaluator_gym.reference.engine import evaluate_case
+from evaluator_gym.reference.v1.engine import evaluate_case
 from evaluator_gym.reference import tags
 from tests.reference.fixtures import (
     example_1_approve,

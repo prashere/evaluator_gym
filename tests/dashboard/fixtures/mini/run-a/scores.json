@@ -1,0 +1,27 @@
+{
+  "per_rollout": [
+    {
+      "task_id": "seed-003",
+      "rollout_index": 0,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {"field_accuracy": {"score": 1.0, "detail": "2/2"}},
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-016",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": 0.5,
+      "base_reward": 0.5,
+      "gate_applied": false,
+      "components": {
+        "decision_correct": {"score": 0.0, "detail": "'APPROVE' != 'HOLD'"},
+        "evidence_f1": {"score": 1.0, "missing": [], "extra": []}
+      },
+      "failure_class": null
+    }
+  ]
+}

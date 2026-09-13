@@ -1,0 +1,9 @@
+{
+  "run_id": "test-run",
+  "model": "groq/gpt-oss-20b",
+  "ruleset_version": "1.0.0",
+  "rubric_version": "0.1.1",
+  "schema_version": "1.0.0",
+  "rollouts": 1,
+  "task_ids": ["seed-003", "seed-016"]
+}

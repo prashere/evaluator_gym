@@ -9,7 +9,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from evaluator_gym.reference import tags
-from evaluator_gym.reference.engine import evaluate_case
+from evaluator_gym.reference.v1.engine import evaluate_case
 from evaluator_gym.reference.load import parse_case
 from tests.reference.fidelity.expectations import _base
 

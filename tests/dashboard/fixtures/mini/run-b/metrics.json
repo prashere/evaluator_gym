@@ -1,0 +1,6 @@
+{
+  "cost_usd": {"total": 0.002, "invoice_usd": 0.0, "pricing_note": "test"},
+  "tokens": {"input": 200, "output": 80},
+  "rollouts_completed": 2,
+  "elapsed_seconds": 2.0
+}

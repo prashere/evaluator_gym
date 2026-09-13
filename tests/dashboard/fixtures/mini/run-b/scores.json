@@ -1,0 +1,22 @@
+{
+  "per_rollout": [
+    {
+      "task_id": "seed-003",
+      "rollout_index": 0,
+      "tier": 1,
+      "reward": null,
+      "failure_class": "parser_invalid_json",
+      "components": null
+    },
+    {
+      "task_id": "seed-016",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {"decision_correct": {"score": 1.0}},
+      "failure_class": null
+    }
+  ]
+}
