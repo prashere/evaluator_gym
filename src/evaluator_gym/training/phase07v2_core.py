@@ -28,7 +28,8 @@ TRAINING_RUBRIC_VERSION_EXPECTED = "train-0.1.0"
 EVAL_RUBRIC_VERSION_EXPECTED = "0.1.2"
 
 MODEL_ID = "Qwen/Qwen2.5-1.5B-Instruct"
-MODEL_REVISION = "7ae557604adf67be50417f59c2c2f167def9a775"
+# Pin the 1.5B repo — do NOT reuse the 0.5B revision (7ae5576…); that commit does not exist on this repo.
+MODEL_REVISION = "989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
 MODEL_SELECTION_NOTE = (
     "1.5B Qwen2.5-Instruct: largest model that fits Colab T4 QLoRA after Phase 05 showed "
     "0.5B could not solve tier 2/3; eval matrix uses 20B–120B API models for benchmarking only."
