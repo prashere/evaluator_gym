@@ -1,6 +1,6 @@
-"""CLI: python -m evaluator_gym.sandbox (Phase 08 scaffold)."""
+"""CLI: python -m evaluator_gym.sandbox"""
 
-raise SystemExit(
-    "Phase 08 sandbox not implemented. "
-    "Install uvicorn and wire app from evaluator_gym.sandbox.app when ready."
-)
+from evaluator_gym.sandbox.app import run
+
+if __name__ == "__main__":
+    run()

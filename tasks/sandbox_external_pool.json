@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "pool_id": "sandbox-external-v1",
+  "purpose": "Dedicated generated external holdout for Phase 08 sandbox. Not the golden 10, not the 23 hand-authored seeds. Server-owned, deterministic, disjoint from Phase 07 training and internal eval pools.",
+  "disjoint_from": {
+    "seed_benchmark_eval_seed": 7,
+    "rl_training_seed": 7001,
+    "eval_generated_holdout_seed": 9001,
+    "rl_heldout_pool_seed": 9101
+  },
+  "generator": {
+    "seed": 9201,
+    "n": 120,
+    "tier": "all",
+    "max_invoice_lines": 3,
+    "family_ids": null
+  },
+  "tier_request_values": ["1", "2", "3", "all"],
+  "max_tasks_per_run": 10,
+  "notes": "Caller requests tier + n only. Server samples from this pool; records generator seed/config on every run. Ground truth stays server-side. tier=all uses balanced sampling across tiers 1–3 (e.g. n=3 → one task per tier)."
+}

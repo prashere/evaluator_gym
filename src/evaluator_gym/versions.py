@@ -17,6 +17,19 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def data_root() -> Path:
+    """Root containing ``rules/`` and ``tasks/`` — editable install or Render checkout."""
+    import os
+
+    override = os.getenv("EVALUATOR_GYM_ROOT", "").strip()
+    if override:
+        return Path(override)
+    for candidate in (repo_root(), Path.cwd()):
+        if (candidate / "rules").is_dir() and (candidate / "tasks").is_dir():
+            return candidate
+    return repo_root()
+
+
 def verifiers_pin() -> str:
     text = (repo_root() / "pyproject.toml").read_text(encoding="utf-8")
     match = re.search(r'verifiers @ git\+[^@]+@([^\s"\']+)', text)

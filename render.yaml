@@ -1,0 +1,26 @@
+# Render Blueprint — Phase 08 sandbox (free web service)
+# Connect repo at https://dashboard.render.com → New → Blueprint → point at this file
+services:
+  - type: web
+    name: evaluator-gym-sandbox
+    runtime: python
+    plan: free
+    buildCommand: pip install .
+    startCommand: python -m evaluator_gym.sandbox
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: SANDBOX_HOST
+        value: 0.0.0.0
+      - key: SANDBOX_DISABLE_OPENAPI
+        value: "1"
+      - key: SANDBOX_DB_PATH
+        value: /tmp/sandbox.db
+      - key: SANDBOX_MAX_TASKS_PER_RUN
+        value: "10"
+      - key: SANDBOX_RATE_LIMIT_PER_MINUTE
+        value: "30"
+      # Optional — enables tag_support_judge on tier 2/3 submit:
+      # - key: GROQ_API_KEY
+      #   sync: false
