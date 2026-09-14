@@ -24,9 +24,15 @@ def data_root() -> Path:
     override = os.getenv("EVALUATOR_GYM_ROOT", "").strip()
     if override:
         return Path(override)
-    for candidate in (repo_root(), Path.cwd()):
-        if (candidate / "rules").is_dir() and (candidate / "tasks").is_dir():
-            return candidate
+    seen: set[Path] = set()
+    anchors = (Path.cwd(), Path(__file__).resolve())
+    for anchor in anchors:
+        for candidate in (anchor, *anchor.parents):
+            if candidate in seen:
+                continue
+            seen.add(candidate)
+            if (candidate / "rules").is_dir() and (candidate / "tasks").is_dir():
+                return candidate
     return repo_root()
 
 

@@ -7,8 +7,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[3]
-FAMILIES_PATH = ROOT / "tasks" / "seed_families.json"
+from evaluator_gym.versions import data_root
+
+
+def _families_path() -> Path:
+    return data_root() / "tasks" / "seed_families.json"
 
 
 @dataclass(frozen=True)
@@ -25,7 +28,7 @@ class SeedFamily:
 
 
 def _load_raw() -> dict[str, Any]:
-    return json.loads(FAMILIES_PATH.read_text())
+    return json.loads(_families_path().read_text(encoding="utf-8"))
 
 
 def load_families() -> dict[str, SeedFamily]:

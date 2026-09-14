@@ -17,8 +17,11 @@ from evaluator_gym.env.failures import (
     PARSER_SCHEMA,
 )
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-AGENT_RESPONSE_SCHEMA_PATH = REPO_ROOT / "tasks" / "agent_response.schema.json"
+from evaluator_gym.versions import data_root
+
+
+def _agent_response_schema_path() -> Path:
+    return data_root() / "tasks" / "agent_response.schema.json"
 
 _FENCE_RE = re.compile(r"```(?:json)?\s*\n?(.*?)\n?```", re.DOTALL | re.IGNORECASE)
 _REDACTED_THINKING_RE = re.compile(
@@ -36,7 +39,7 @@ class ParseResult:
 
 
 def _load_schema() -> dict[str, Any]:
-    return json.loads(AGENT_RESPONSE_SCHEMA_PATH.read_text(encoding="utf-8"))
+    return json.loads(_agent_response_schema_path().read_text(encoding="utf-8"))
 
 
 def strip_reasoning_preamble(text: str) -> str:
