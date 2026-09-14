@@ -8,5 +8,5 @@ def test_golden_suite_valid():
 
 def test_golden_task_count():
     ids = golden_task_ids()
-    assert len(ids) == 10
-    assert len(set(ids)) == 10
+    assert len(ids) == 12
+    assert len(set(ids)) == 12

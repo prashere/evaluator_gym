@@ -29,7 +29,6 @@ _FINGERPRINT_KEYS = (
     "n",
     "seed",
     "rollouts",
-    "temperature",
     "ruleset_version",
     "schema_version",
     "generator_version",

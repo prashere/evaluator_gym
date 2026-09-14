@@ -23,6 +23,9 @@ from evaluator_gym.versions import data_root
 def _agent_response_schema_path() -> Path:
     return data_root() / "tasks" / "agent_response.schema.json"
 
+
+AGENT_RESPONSE_SCHEMA_PATH = _agent_response_schema_path()
+
 _FENCE_RE = re.compile(r"```(?:json)?\s*\n?(.*?)\n?```", re.DOTALL | re.IGNORECASE)
 _REDACTED_THINKING_RE = re.compile(
     r"<think>.*?</think>",
@@ -125,14 +128,6 @@ def _normalize_reconciliation_data(data: dict[str, Any]) -> dict[str, Any]:
     return {**data, "evidence_set": normalized}
 
 
-def _filter_retrieval_to_expected_keys(
-    data: dict[str, Any], expected_keys: set[str]
-) -> dict[str, Any]:
-    if not expected_keys:
-        return data
-    return {key: data[key] for key in expected_keys if key in data}
-
-
 def _schema_for_shape(schema: dict[str, Any], response_shape: str) -> dict[str, Any]:
     ref = (
         "#/$defs/reconciliationResponse"
@@ -167,7 +162,13 @@ def parse_agent_response(text: str, info: dict[str, Any]) -> ParseResult:
         data = _normalize_reconciliation_data(data)
 
     if response_shape == "retrieval" and expected_keys:
-        data = _filter_retrieval_to_expected_keys(data, expected_keys)
+        actual_keys = set(data.keys())
+        if actual_keys != expected_keys:
+            return ParseResult(
+                ok=False,
+                error_class=PARSER_KEY_MISMATCH,
+                error_message=f"Expected keys {sorted(expected_keys)}, got {sorted(actual_keys)}",
+            )
         data = _coerce_retrieval_string_values(data, expected_keys)
 
     schema = _load_schema()
@@ -180,15 +181,6 @@ def parse_agent_response(text: str, info: dict[str, Any]) -> ParseResult:
             error_class=PARSER_SCHEMA,
             error_message=exc.message,
         )
-
-    if response_shape == "retrieval" and expected_keys:
-        actual_keys = set(data.keys())
-        if actual_keys != expected_keys:
-            return ParseResult(
-                ok=False,
-                error_class=PARSER_KEY_MISMATCH,
-                error_message=f"Expected keys {sorted(expected_keys)}, got {sorted(actual_keys)}",
-            )
 
     return ParseResult(ok=True, data=data)
 

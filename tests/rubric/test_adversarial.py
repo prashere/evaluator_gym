@@ -362,7 +362,7 @@ async def test_judge_failure_sets_provider_error_via_gym_rubric(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_sandbox_submit_perfect_via_testclient():
+async def test_sandbox_submit_perfect_via_testclient(monkeypatch):
     pytest.importorskip("fastapi")
     pytest.importorskip("verifiers.Parser")
     import verifiers as vf
@@ -370,22 +370,41 @@ async def test_sandbox_submit_perfect_via_testclient():
     if not hasattr(vf, "Parser"):
         pytest.skip("verifiers v0 not installed")
     from fastapi.testclient import TestClient
+    from evaluator_gym.rubric.types import RewardComponent
     from evaluator_gym.sandbox.app import app
+    from evaluator_gym.sandbox.internal import blob_to_internal_task
 
-    task = next(t for t in load_seed_tasks(seed_dir=SEED_DIR) if t.task_id == "seed-016")
+    async def _fake_tag_support(parsed, completion, **kwargs):
+        _ = (parsed, completion, kwargs)
+        return RewardComponent(score=1.0, clauses=("§7",))
+
+    monkeypatch.setattr("evaluator_gym.rubric.build.score_tag_support_judge", _fake_tag_support)
+
     client = TestClient(app)
+    run = client.post("/v1/runs", json={"tier": "2", "n": 1}).json()
+    run_id = run["run_id"]
+    public_id = run["tasks"][0]["id"]
+    service = client.app.state.sandbox_service
+    issued = service.store.get_issued_task(run_id, public_id)
+    assert issued is not None
+    internal = blob_to_internal_task(issued.internal_blob, rules_root=service.settings.rules_root)
+
     resp = client.post(
-        "/submit",
+        f"/v1/runs/{run_id}/submit",
         json={
-            "task_id": task.task_id,
-            "response_text": json.dumps(task.ground_truth),
-            "mode": "single",
+            "answers": [
+                {
+                    "id": public_id,
+                    "answer": internal.ground_truth,
+                    "completion": [{"role": "tool", "content": "reviewer test"}],
+                }
+            ]
         },
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["scored"] is True
-    assert body["reward"] == pytest.approx(1.0)
+    assert body["status"] == "complete"
+    assert body["mean_reward"] == pytest.approx(1.0, abs=0.05)
 
 
 @pytest.mark.asyncio
@@ -398,19 +417,24 @@ async def test_sandbox_tool_mode_requires_completion():
     from fastapi.testclient import TestClient
     from evaluator_gym.sandbox.app import app
 
-    task = next(t for t in load_seed_tasks(seed_dir=SEED_DIR) if t.ground_truth.get("decision") == "HOLD")
     client = TestClient(app)
+    run = client.post("/v1/runs", json={"tier": "2", "n": 1}).json()
+    public_id = run["tasks"][0]["id"]
     resp = client.post(
-        "/submit",
+        f"/v1/runs/{run['run_id']}/submit",
         json={
-            "task_id": task.task_id,
-            "response_text": json.dumps(
-                {"decision": task.ground_truth["decision"], "evidence_set": task.ground_truth["evidence_set"]}
-            ),
-            "mode": "tool",
+            "answers": [
+                {
+                    "id": public_id,
+                    "answer": {"decision": "HOLD", "evidence_set": []},
+                }
+            ]
         },
     )
-    assert resp.status_code == 400
+    assert resp.status_code == 200
+    row = resp.json()["per_task"][0]
+    assert row["scored"] is False
+    assert row["error"]["code"] == "INVALID_ANSWER"
 
 
 @pytest.mark.asyncio
@@ -447,23 +471,34 @@ async def test_sandbox_tool_mode_passes_transcript(monkeypatch):
         },
         {"role": "tool", "content": "invoice data"},
     ]
-    task = next(t for t in load_seed_tasks(seed_dir=SEED_DIR) if t.ground_truth.get("decision") == "HOLD")
     client = TestClient(app)
+    run = client.post("/v1/runs", json={"tier": "2", "n": 1}).json()
+    run_id = run["run_id"]
+    public_id = run["tasks"][0]["id"]
+    service = client.app.state.sandbox_service
+    issued = service.store.get_issued_task(run_id, public_id)
+    assert issued is not None
+    from evaluator_gym.sandbox.internal import blob_to_internal_task
+
+    internal = blob_to_internal_task(issued.internal_blob, rules_root=service.settings.rules_root)
+    gt = internal.ground_truth
+
     resp = client.post(
-        "/submit",
+        f"/v1/runs/{run_id}/submit",
         json={
-            "task_id": task.task_id,
-            "response_text": json.dumps(
-                {"decision": task.ground_truth["decision"], "evidence_set": task.ground_truth["evidence_set"]}
-            ),
-            "mode": "tool",
-            "completion": transcript,
+            "answers": [
+                {
+                    "id": public_id,
+                    "answer": gt,
+                    "completion": transcript,
+                }
+            ]
         },
     )
     assert resp.status_code == 200
     assert captured_completions == [transcript]
-    body = resp.json()
-    assert body["audit"]["components"]["tag_support_judge"]["score"] == 1.0
+    task_score = next(row for row in resp.json()["per_task"] if row["id"] == public_id)
+    assert task_score["breakdown"]["tag_support_judge"]["score"] == 1.0
 
 
 @pytest.mark.asyncio
