@@ -3,6 +3,8 @@
 
 # Python
 .venv/
+.ci-test-venv/
+.ci-test-venv-*/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -13,6 +15,10 @@ build/
 
 # Generated at runtime 
 tasks/generated/
+.sandbox/
+
+# Local working docs (reviewer-facing copies live in submission_docs/)
+docs/
 
 # RL checkpoints 
 checkpoints/
@@ -20,3 +26,5 @@ checkpoints/
 AGENTS.md
 
 private/
+
+README.md
