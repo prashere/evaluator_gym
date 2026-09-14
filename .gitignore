@@ -26,3 +26,84 @@ checkpoints/
 AGENTS.md
 
 private/
+
+# OS / IDE
+.DS_Store
+.cursor/
+
+# Local benchmark manifests (only golden-matrix-p3.json is committed)
+benchmarks/*
+!benchmarks/golden-matrix-p3.json
+
+# Colab / local RL artifact directories
+evaluator-gym-phase07/
+evaluator-gym-phase07-v2/
+
+# Local notebooks (committed notebooks in git stay tracked)
+notebooks/*_executed.ipynb
+notebooks/phase07_grpo_colab.ipynb
+
+# Local eval runs, logs, and smoke artifacts (golden-matrix-p3 + results/training/ stay tracked)
+results/**/*.log
+results/**/*.pid
+results/**/*.out
+results/_fix3_smoke/
+results/phase07-cpu-smoke/
+results/phase07v2-cpu-smoke/
+results/judge_calibration.json
+results/**/full-matrix-b/
+results/**/golden-matrix-v2/
+results/**/mini-matrix-b/
+results/**/tier-smoke-v1/
+results/**/gate-check/
+results/**/qwen-mini-fix-v1/
+results/**/qwen-mini-fix-v2/
+results/groq-*/20260913T*/
+
+# Local-only scripts (tracked scripts under scripts/ remain tracked)
+scripts/check_groq_limits.py
+scripts/ci_local.sh
+scripts/commit_results_for_deploy.sh
+scripts/compute_adversarial_baselines.py
+scripts/export_transcript_traces.py
+scripts/fidelity_audit.py
+scripts/generate_holdout_taskset.py
+scripts/groq_tpd_retry_seconds.py
+scripts/inspect_environment.py
+scripts/judge_reliability.py
+scripts/prepare_eval_resume.py
+scripts/recompute_scores.py
+scripts/run_eval_matrix.sh
+scripts/run_full_matrix.sh
+scripts/run_full_matrix_daemon.py
+scripts/run_full_matrix_with_baselines.sh
+scripts/run_golden_matrix.sh
+scripts/run_golden_matrix_p3.sh
+scripts/run_golden_matrix_v2.sh
+scripts/run_mini_matrix.sh
+scripts/run_phase07_cpu_smoke.py
+scripts/run_phase07v2_cpu_smoke.py
+scripts/summarize_mini_matrix.py
+scripts/validate_eval_golden.py
+scripts/verify_eval_models.py
+
+# Local training module (not submitted)
+src/evaluator_gym/training/phase07v2_model.py
+
+# Local test additions (not submitted)
+tests/benchmarks/
+tests/training_rubric/
+tests/dashboard/test_discover_models.py
+tests/dashboard/test_load_training.py
+tests/eval/test_benchmark_cli.py
+tests/eval/test_fingerprint.py
+tests/eval/test_prompt_hash.py
+tests/integration/test_repro_contract.py
+tests/test_versions.py
+tests/training/test_phase07_core.py
+tests/training/test_phase07_cpu_pipeline.py
+tests/training/test_phase07_live.py
+tests/training/test_phase07_pilot_parsing.py
+tests/training/test_phase07v2_cpu_pipeline.py
+tests/training/test_phase07v2_model.py
+tests/training/test_phase07v2_notebook_contract.py
