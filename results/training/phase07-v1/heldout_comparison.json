@@ -1,0 +1,32 @@
+{
+  "base": {
+    "attempted": 30,
+    "scored": 25,
+    "parse_success_rate": 0.8333333333333334,
+    "mean_reward_scored": 0.46454545454545454,
+    "reward_sd_scored": 0.46566327587794315,
+    "tier_1_exact_pass_rate": 1.0,
+    "tier_2_exact_pass_rate": 0.0,
+    "tier_3_exact_pass_rate": 0.0
+  },
+  "beta-1e-5": {
+    "attempted": 30,
+    "scored": 29,
+    "parse_success_rate": 0.9666666666666667,
+    "mean_reward_scored": 0.4108150470219436,
+    "reward_sd_scored": 0.45257105900520206,
+    "tier_1_exact_pass_rate": 1.0,
+    "tier_2_exact_pass_rate": 0.0,
+    "tier_3_exact_pass_rate": 0.0
+  },
+  "beta-1e-2": {
+    "attempted": 30,
+    "scored": 26,
+    "parse_success_rate": 0.8666666666666667,
+    "mean_reward_scored": 0.44667832167832167,
+    "reward_sd_scored": 0.4652619589011212,
+    "tier_1_exact_pass_rate": 1.0,
+    "tier_2_exact_pass_rate": 0.0,
+    "tier_3_exact_pass_rate": 0.0
+  }
+}

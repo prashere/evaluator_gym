@@ -1,0 +1,10 @@
+{
+  "attempted": 30,
+  "scored": 26,
+  "parse_success_rate": 0.8666666666666667,
+  "mean_reward_scored": 0.44667832167832167,
+  "reward_sd_scored": 0.4652619589011212,
+  "tier_1_exact_pass_rate": 1.0,
+  "tier_2_exact_pass_rate": 0.0,
+  "tier_3_exact_pass_rate": 0.0
+}

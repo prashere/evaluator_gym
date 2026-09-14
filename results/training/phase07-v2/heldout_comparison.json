@@ -1,0 +1,43 @@
+{
+  "base": {
+    "attempted": 90,
+    "scored": 90,
+    "parse_success_rate": 1.0,
+    "mean_reward_scored": 0.4222222222222222,
+    "reward_sd_scored": 0.43207827468605775,
+    "tier_1_exact_pass_rate": 0.9666666666666667,
+    "tier_2_exact_pass_rate": 0.06666666666666667,
+    "tier_3_exact_pass_rate": 0.03333333333333333,
+    "mean_training_reward_scored": 0.3894444444444444,
+    "training_rubric_version": "train-0.1.0",
+    "eval_rubric_version": "0.1.2"
+  },
+  "beta-0.01": {
+    "attempted": 90,
+    "scored": 90,
+    "parse_success_rate": 1.0,
+    "mean_reward_scored": 0.3922222222222222,
+    "reward_sd_scored": 0.42193449030313435,
+    "tier_1_exact_pass_rate": 0.9666666666666667,
+    "tier_2_exact_pass_rate": 0.0,
+    "tier_3_exact_pass_rate": 0.0,
+    "mean_training_reward_scored": 0.3577777777777778,
+    "training_rubric_version": "train-0.1.0",
+    "eval_rubric_version": "0.1.2"
+  },
+  "beta-0.1": {
+    "attempted": 90,
+    "scored": 90,
+    "parse_success_rate": 1.0,
+    "mean_reward_scored": 0.3922222222222222,
+    "reward_sd_scored": 0.42193449030313435,
+    "tier_1_exact_pass_rate": 0.9666666666666667,
+    "tier_2_exact_pass_rate": 0.0,
+    "tier_3_exact_pass_rate": 0.0,
+    "mean_training_reward_scored": 0.3577777777777778,
+    "training_rubric_version": "train-0.1.0",
+    "eval_rubric_version": "0.1.2"
+  },
+  "training_rubric_version": "train-0.1.0",
+  "eval_rubric_version": "0.1.2"
+}
