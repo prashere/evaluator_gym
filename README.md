@@ -11,11 +11,14 @@ Reviewer write-ups (eval, failures, edge cases, assumptions, RL training, AI usa
 
 ## 1. Clone and install
 
+You need **Python 3.10 or newer**. Check with `python3 --version`. If that prints 3.9 or older, install a newer Python (for example Homebrew `python3.12` on macOS) and use that binary in the steps below.
+
 ```bash
 git clone https://github.com/prashere/evaluator_gym.git
 cd evaluator_gym
 
 python3 -m venv .venv
+# If python3 is too old: python3.12 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 ```
