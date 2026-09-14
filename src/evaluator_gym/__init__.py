@@ -1,7 +1,21 @@
 """Evaluator gym — task schema, seed taskset, and task generator"""
 
-__version__ = "0.1.0"
+from evaluator_gym.versions import (
+    GENERATOR_VERSION,
+    JUDGE_PROMPT_VERSION,
+    PACKAGE_VERSION,
+    RUBRIC_VERSION,
+    RULESET_VERSION,
+    SCHEMA_VERSION,
+)
 
-RULESET_VERSION = "1.0.0"
-SCHEMA_VERSION = "1.0.0"
-GENERATOR_VERSION = "1.0.0"
+__version__ = PACKAGE_VERSION
+
+__all__ = [
+    "__version__",
+    "GENERATOR_VERSION",
+    "JUDGE_PROMPT_VERSION",
+    "RUBRIC_VERSION",
+    "RULESET_VERSION",
+    "SCHEMA_VERSION",
+]

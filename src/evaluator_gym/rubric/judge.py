@@ -11,8 +11,8 @@ from typing import Any, Callable, Awaitable
 import httpx
 
 from evaluator_gym.rubric.types import RewardComponent, ScoringError
+from evaluator_gym.versions import JUDGE_PROMPT_VERSION
 
-JUDGE_PROMPT_VERSION = "0.1.0"
 JUDGE_PROMPT_PATH = Path(__file__).with_name("judge_prompt.txt")
 
 DEFAULT_JUDGE_MODEL = "openai/gpt-oss-120b"

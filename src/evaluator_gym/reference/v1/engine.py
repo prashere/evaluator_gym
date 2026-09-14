@@ -13,10 +13,11 @@ from evaluator_gym.reference.rule_03_reconciliation import evaluate_rule_03
 from evaluator_gym.reference.rule_04_vendor import evaluate_rule_04
 from evaluator_gym.reference.rule_05_approval import evaluate_rule_05
 from evaluator_gym.reference.types import Case, GroundTruth
+from evaluator_gym.versions import RULESET_VERSION
 
 
 class V1ReferenceEngine:
-    RULESET_VERSION = "1.0.0"
+    RULESET_VERSION = RULESET_VERSION
 
     def evaluate(self, case: Case) -> GroundTruth:
         evidence: set[str] = set()

@@ -1,1 +1,1 @@
-"""RL training loop — Phase 07 (not implemented)."""
+"""Phase 07 online RL — contracts, runtime, Colab bootstrap, live logging."""

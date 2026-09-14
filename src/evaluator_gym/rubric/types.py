@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-RUBRIC_VERSION = "0.1.2"
+from evaluator_gym.versions import RUBRIC_VERSION
 DECISION_FAIL_CAP = 0.10
 EVIDENCE_ZERO_OVERLAP_CAP = 0.10
 TIER1_FIELD_FAIL_CAP = 0.30

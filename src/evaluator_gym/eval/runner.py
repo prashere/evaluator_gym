@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from verifiers.legacy.types import ClientConfig, RolloutInput
 
 from evaluator_gym import GENERATOR_VERSION, RULESET_VERSION, SCHEMA_VERSION
+from evaluator_gym.benchmarks import apply_benchmark
 from evaluator_gym.environment import load_environment
 from evaluator_gym.eval.aggregate import aggregate_rollouts
 from evaluator_gym.eval.outcomes import is_provider_failure, is_scored_rollout
@@ -31,7 +32,9 @@ from evaluator_gym.eval.sampling import (
 from evaluator_gym.eval.providers import client_config_for_slug, resolve_api_key, verify_model_available
 from evaluator_gym.eval.registry import ModelEntry, get_model
 from evaluator_gym.rubric import RUBRIC_VERSION
+from evaluator_gym.rubric.build import REWARD_WEIGHTS
 from evaluator_gym.rubric.judge import JUDGE_PROMPT_VERSION, judge_config_from_env
+from evaluator_gym.versions import PACKAGE_VERSION, verifiers_pin
 
 STATE_COLUMNS = [
     "failure_class",
@@ -68,6 +71,19 @@ def _resolve_n(
     if task_source == "generated":
         return 100
     return None
+
+
+def _config_extra(
+    *,
+    task_ids: list[str] | None,
+    benchmark_meta: dict[str, str] | None,
+) -> dict[str, Any] | None:
+    extra: dict[str, Any] = {}
+    if task_ids:
+        extra["task_ids"] = task_ids
+    if benchmark_meta:
+        extra.update(benchmark_meta)
+    return extra or None
 
 
 def _default_concurrency(entry: ModelEntry, override: int | None) -> int:
@@ -122,6 +138,9 @@ def build_run_config(
         "judge_temperature": judge.temperature,
         "judge_prompt_version": JUDGE_PROMPT_VERSION,
         "prompt_hashes": prompt_hashes(),
+        "package_version": PACKAGE_VERSION,
+        "verifiers_pin": verifiers_pin(),
+        "reward_weights": REWARD_WEIGHTS,
         "config_fingerprint": None,
         "stop_reason": None,
         "provider_sampling_args": provider_sampling_args,
@@ -226,6 +245,10 @@ async def _run_one_rollout(
 
 
 async def run_eval_async(args: argparse.Namespace) -> Path:
+    benchmark_meta: dict[str, str] | None = None
+    if getattr(args, "benchmark", None):
+        benchmark_meta = apply_benchmark(args, argv=getattr(args, "_argv", None))
+
     entry = get_model(args.model)
     resolve_api_key(entry)
 
@@ -270,7 +293,7 @@ async def run_eval_async(args: argparse.Namespace) -> Path:
         concurrency=concurrency,
         run_id=run_id,
         provider_sampling_args=provider_sampling_args,
-        extra={"task_ids": task_ids} if task_ids else None,
+        extra=_config_extra(task_ids=task_ids, benchmark_meta=benchmark_meta),
     )
 
     if args.resume:
@@ -483,7 +506,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Matrix name for config.json (e.g. groq_open_oss_qwen)",
     )
-    return p.parse_args(argv)
+    p.add_argument(
+        "--benchmark",
+        default=None,
+        help="Benchmark manifest id from benchmarks/ (e.g. full-matrix-v2)",
+    )
+    args = p.parse_args(argv)
+    args._argv = list(argv) if argv is not None else None
+    return args
 
 
 def main() -> None:

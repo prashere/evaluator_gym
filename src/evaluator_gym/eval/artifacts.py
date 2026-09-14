@@ -20,6 +20,30 @@ INFRASTRUCTURE_FAILURES = frozenset(
     }
 )
 
+_FINGERPRINT_KEYS = (
+    "model",
+    "api_model_id",
+    "mode",
+    "tier",
+    "task_source",
+    "n",
+    "seed",
+    "rollouts",
+    "temperature",
+    "ruleset_version",
+    "schema_version",
+    "generator_version",
+    "rubric_version",
+    "judge_model",
+    "judge_base_url",
+    "judge_temperature",
+    "judge_prompt_version",
+    "prompt_hashes",
+    "provider_sampling_args",
+    "benchmark_manifest_hash",
+    "task_ids",
+)
+
 
 @dataclass
 class ProgressKey:
@@ -90,25 +114,14 @@ class RunArtifacts:
 
 
 def config_fingerprint(config: dict[str, Any]) -> str:
-    keys = (
-        "model",
-        "api_model_id",
-        "mode",
-        "tier",
-        "task_source",
-        "n",
-        "seed",
-        "rollouts",
-        "rubric_version",
-        "provider_sampling_args",
-    )
-    payload = {k: config.get(k) for k in keys}
-    raw = json.dumps(payload, sort_keys=True)
+    payload = {k: config.get(k) for k in _FINGERPRINT_KEYS}
+    raw = json.dumps(payload, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 def assert_resume_compatible(saved: dict[str, Any], current: dict[str, Any]) -> None:
     if config_fingerprint(saved) != config_fingerprint(current):
         raise RuntimeError(
-            "Resume refused: config fingerprint mismatch (model/seed/n/mode/rubric changed)"
+            "Resume refused: config fingerprint mismatch "
+            "(model/seed/benchmark/judge/prompt/rubric changed)"
         )

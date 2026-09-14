@@ -1,111 +1,96 @@
-"""Sandbox HTTP API — reuses rubric/; no ground_truth in responses."""
+"""Sandbox HTTP API — tasks + scored submit (Phase 08 partial)."""
 
 from __future__ import annotations
 
-import os
-import uuid
+import asyncio
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from evaluator_gym import RULESET_VERSION
-from evaluator_gym.generator.emit import generate_taskset
+from evaluator_gym.parser import parse_agent_response
+from evaluator_gym.rubric import score_task
+from evaluator_gym.rubric.audit import breakdown_to_dict
+from evaluator_gym.rubric.types import ScoringError
+from evaluator_gym.task_loader import load_seed_tasks, to_dataset_row
 
 app = FastAPI(title="Evaluator Gym Sandbox", version="0.1.0")
 
-MAX_TASKS = int(os.getenv("SANDBOX_MAX_TASKS_PER_RUN", "50"))
-_run_store: dict[str, dict[str, Any]] = {}
 
-
-class SubmitAnswer(BaseModel):
-    id: str
-    answer: dict[str, Any]
-
-
-class SubmitBody(BaseModel):
-    run_id: str
-    answers: list[SubmitAnswer] = Field(default_factory=list)
+class SubmitRequest(BaseModel):
+    task_id: str
+    response_text: str
+    mode: str = Field(default="single", pattern="^(single|tool)$")
+    completion: list[dict[str, Any]] | None = None
 
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "phase": "08-partial"}
 
 
 @app.get("/tasks")
-def get_tasks(
-    tier: str = Query("2"),
-    n: int = Query(10, ge=1, le=MAX_TASKS),
-    seed: int = Query(7),
-) -> dict[str, Any]:
-    if n > MAX_TASKS:
-        raise HTTPException(status_code=400, detail=f"max {MAX_TASKS} tasks per run")
-
-    run_id = str(uuid.uuid4())
-    tasks = generate_taskset(n=n, seed=seed, tier=tier)
-
-    public_tasks = [
-        {
-            "id": t.id,
-            "prompt": t.prompt,
-            "difficulty": t.difficulty,
-            "tools_available": ["lookup_reference_table", "get_rate", "read_document", "python_calc"],
-        }
-        for t in tasks
-    ]
-
-    _run_store[run_id] = {
-        "run_id": run_id,
-        "ruleset_version": RULESET_VERSION,
-        "seed": seed,
-        "tier": tier,
-        "tasks": tasks,
-        "answers": [],
-    }
-
-    return {
-        "run_id": run_id,
-        "ruleset_version": RULESET_VERSION,
-        "seed": seed,
-        "tasks": public_tasks,
-    }
+def list_tasks(tier: str = "all", n: int = 10) -> list[dict[str, Any]]:
+    tasks = load_seed_tasks(tier=tier, n=n)
+    rows = []
+    for task in tasks:
+        row = to_dataset_row(task, mode="single")
+        rows.append(
+            {
+                "task_id": task.task_id,
+                "tier": task.tier,
+                "prompt": row["prompt"],
+                "info": row["info"],
+            }
+        )
+    return rows
 
 
 @app.post("/submit")
-def submit(body: SubmitBody) -> dict[str, Any]:
-    run = _run_store.get(body.run_id)
-    if run is None:
-        raise HTTPException(status_code=404, detail="run_id not found")
+async def submit(body: SubmitRequest) -> dict[str, Any]:
+    matches = [t for t in load_seed_tasks(tier="all", n=1000) if t.task_id == body.task_id]
+    if not matches:
+        raise HTTPException(status_code=404, detail=f"Unknown task_id: {body.task_id}")
+    task = matches[0]
+    info = {
+        "task_id": task.task_id,
+        "tier": task.tier,
+        "response_shape": task.response_shape,
+        "ruleset_version": task.ruleset_version,
+        "expected_response_keys": list(task.expected_response_keys),
+    }
+    if body.mode == "tool" and not body.completion:
+        raise HTTPException(
+            status_code=400,
+            detail="tool mode requires completion: transcript of read_document tool calls and results",
+        )
 
-    # Score via rubric/ in Phase 08 — stub returns structure only.
-    per_task = [
-        {
-            "id": a.id,
-            "score": 0.0,
-            "breakdown": {"exact_answer": 0.0, "field_recall": 0.0, "format": 0.0},
-            "clause": "sandbox.stub",
+    parsed = parse_agent_response(body.response_text, info)
+    if not parsed.ok:
+        return {
+            "scored": False,
+            "failure_class": parsed.error_class,
+            "error_message": parsed.error_message,
         }
-        for a in body.answers
-    ]
-
+    try:
+        breakdown = await score_task(
+            parsed=parsed.data or {},
+            ground_truth=task.ground_truth,
+            info=info,
+            mode=body.mode,  # type: ignore[arg-type]
+            completion=body.completion or [],
+            parse_result={"ok": True, "data": parsed.data},
+        )
+    except ScoringError as exc:
+        return {"scored": False, "failure_class": "scoring_error", "error_message": str(exc)}
     return {
-        "run_id": body.run_id,
-        "mean_reward": 0.0,
-        "per_task": per_task,
+        "scored": True,
+        "reward": breakdown.final_reward,
+        "audit": breakdown_to_dict(breakdown),
     }
 
 
-@app.get("/runs/{run_id}")
-def get_run(run_id: str) -> dict[str, Any]:
-    run = _run_store.get(run_id)
-    if run is None:
-        raise HTTPException(status_code=404, detail="run_id not found")
+def run() -> None:
+    import uvicorn
 
-    return {
-        "run_id": run_id,
-        "ruleset_version": run["ruleset_version"],
-        "seed": run["seed"],
-        "tier": run["tier"],
-        "n_answers": len(run.get("answers", [])),
-    }
+    uvicorn.run("evaluator_gym.sandbox.app:app", host="0.0.0.0", port=8080)
