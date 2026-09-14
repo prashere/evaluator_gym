@@ -1,0 +1,49 @@
+{
+  "run_id": "golden-matrix-p3",
+  "model": "baseline-always-hold",
+  "baseline_policy": "HOLD + PO_NOT_FOUND on T2\u20133; tier-1 uses wrong retrieval fields.",
+  "is_baseline": true,
+  "mode": "single",
+  "tier": "all",
+  "task_source": "seed",
+  "rollouts": 3,
+  "task_ids": [
+    "seed-001",
+    "seed-005",
+    "seed-007",
+    "seed-009",
+    "seed-013",
+    "seed-014",
+    "seed-016",
+    "seed-019",
+    "seed-020",
+    "seed-021",
+    "seed-022",
+    "seed-023"
+  ],
+  "ruleset_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "generator_version": "1.0.0",
+  "rubric_version": "0.1.2",
+  "package_version": "0.1.0",
+  "verifiers_pin": "66a60649^1",
+  "reward_weights": {
+    "retrieval": {
+      "field_accuracy": 1.0
+    },
+    "reconciliation_single": {
+      "decision_correct": 0.45,
+      "evidence_f1": 0.35,
+      "precedence_coherence": 0.1,
+      "calibration": 0.1,
+      "tag_support_judge": 0.0
+    },
+    "reconciliation_tool": {
+      "decision_correct": 0.4,
+      "evidence_f1": 0.3,
+      "precedence_coherence": 0.1,
+      "calibration": 0.1,
+      "tag_support_judge": 0.1
+    }
+  }
+}

@@ -1,0 +1,2034 @@
+{
+  "rollouts_planned": null,
+  "rollouts_attempted": 36,
+  "parse_success_rate": 1.0,
+  "scored_rate": 1.0,
+  "format_failure_rate": 0.0,
+  "provider_failure_rate": 0.0,
+  "per_rollout": [
+    {
+      "task_id": "seed-001",
+      "rollout_index": 0,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "1/1 fields correct",
+          "correct": 1,
+          "total": 1,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-001",
+      "rollout_index": 1,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "1/1 fields correct",
+          "correct": 1,
+          "total": 1,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-001",
+      "rollout_index": 2,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "1/1 fields correct",
+          "correct": 1,
+          "total": 1,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-005",
+      "rollout_index": 0,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-005",
+      "rollout_index": 1,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-005",
+      "rollout_index": 2,
+      "tier": 1,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "field_accuracy": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a73"
+          ],
+          "detail": "2/2 fields correct",
+          "correct": 2,
+          "total": 2,
+          "any_field_wrong": false
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-007",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "QUANTITY_TOLERANCE_EXCEEDED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-007",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "QUANTITY_TOLERANCE_EXCEEDED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-007",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "QUANTITY_TOLERANCE_EXCEEDED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-009",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PRICE_TOLERANCE_EXCEEDED",
+            "STANDARD_APPROVAL_MISSING_OR_INVALID"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-009",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PRICE_TOLERANCE_EXCEEDED",
+            "STANDARD_APPROVAL_MISSING_OR_INVALID"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-009",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PRICE_TOLERANCE_EXCEEDED",
+            "STANDARD_APPROVAL_MISSING_OR_INVALID"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-013",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "LINE_NOT_MATCHED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-013",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "LINE_NOT_MATCHED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-013",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "LINE_NOT_MATCHED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-014",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'ESCALATE'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PRICE_TOLERANCE_EXCEEDED",
+            "VENDOR_SUSPENDED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-014",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'ESCALATE'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PRICE_TOLERANCE_EXCEEDED",
+            "VENDOR_SUSPENDED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-014",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'ESCALATE'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PRICE_TOLERANCE_EXCEEDED",
+            "VENDOR_SUSPENDED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=0; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-016",
+      "rollout_index": 0,
+      "tier": 2,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "decision_correct": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' == 'APPROVE'"
+        },
+        "evidence_f1": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=1.0000 recall=1.0000",
+          "missing": [],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=1; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-016",
+      "rollout_index": 1,
+      "tier": 2,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "decision_correct": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' == 'APPROVE'"
+        },
+        "evidence_f1": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=1.0000 recall=1.0000",
+          "missing": [],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=1; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-016",
+      "rollout_index": 2,
+      "tier": 2,
+      "reward": 1.0,
+      "base_reward": 1.0,
+      "gate_applied": false,
+      "components": {
+        "decision_correct": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' == 'APPROVE'"
+        },
+        "evidence_f1": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=1.0000 recall=1.0000",
+          "missing": [],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "no_false_approval=1; no_false_restraint=1"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-019",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'ESCALATE'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PO_CONFLICT_UNRESOLVED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-019",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'ESCALATE'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PO_CONFLICT_UNRESOLVED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-019",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'ESCALATE'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PO_CONFLICT_UNRESOLVED"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-020",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "RECEIPT_NOT_FOUND"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-020",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "RECEIPT_NOT_FOUND"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-020",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "RECEIPT_NOT_FOUND"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-021",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PO_NOT_FOUND"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-021",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PO_NOT_FOUND"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-021",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "PO_NOT_FOUND"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-022",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "VENDOR_RECORD_NOT_FOUND"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-022",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "VENDOR_RECORD_NOT_FOUND"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-022",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "VENDOR_RECORD_NOT_FOUND"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-023",
+      "rollout_index": 0,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "INVOICE_INCOMPLETE"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-023",
+      "rollout_index": 1,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "INVOICE_INCOMPLETE"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    },
+    {
+      "task_id": "seed-023",
+      "rollout_index": 2,
+      "tier": 3,
+      "reward": 0.1,
+      "base_reward": 0.1,
+      "gate_applied": true,
+      "components": {
+        "decision_correct": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a712"
+          ],
+          "detail": "'APPROVE' != 'HOLD'"
+        },
+        "evidence_f1": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a76",
+            "\u00a713"
+          ],
+          "detail": "precision=0.0000 recall=0.0000",
+          "missing": [
+            "INVOICE_INCOMPLETE"
+          ],
+          "extra": []
+        },
+        "precedence_coherence": {
+          "score": 1.0,
+          "clauses": [
+            "\u00a712",
+            "\u00a713"
+          ],
+          "detail": "pred 'APPROVE' vs decide_from_evidence -> 'APPROVE'"
+        },
+        "calibration": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a712"
+          ],
+          "detail": "safe_non_approval=0"
+        },
+        "tag_support_judge": {
+          "score": 0.0,
+          "clauses": [
+            "\u00a77",
+            "\u00a78",
+            "\u00a79",
+            "\u00a710",
+            "\u00a711"
+          ],
+          "detail": "not_applicable_single_turn"
+        }
+      },
+      "failure_class": null
+    }
+  ],
+  "per_task": {
+    "seed-001": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 3,
+      "rewards": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "seed-005": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 3,
+      "rewards": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "seed-007": {
+      "mean": 0.10000000000000002,
+      "std": 1.3877787807814457e-17,
+      "n": 3,
+      "rewards": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "seed-009": {
+      "mean": 0.10000000000000002,
+      "std": 1.3877787807814457e-17,
+      "n": 3,
+      "rewards": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "seed-013": {
+      "mean": 0.10000000000000002,
+      "std": 1.3877787807814457e-17,
+      "n": 3,
+      "rewards": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "seed-014": {
+      "mean": 0.10000000000000002,
+      "std": 1.3877787807814457e-17,
+      "n": 3,
+      "rewards": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "seed-016": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 3,
+      "rewards": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "seed-019": {
+      "mean": 0.10000000000000002,
+      "std": 1.3877787807814457e-17,
+      "n": 3,
+      "rewards": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "seed-020": {
+      "mean": 0.10000000000000002,
+      "std": 1.3877787807814457e-17,
+      "n": 3,
+      "rewards": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "seed-021": {
+      "mean": 0.10000000000000002,
+      "std": 1.3877787807814457e-17,
+      "n": 3,
+      "rewards": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "seed-022": {
+      "mean": 0.10000000000000002,
+      "std": 1.3877787807814457e-17,
+      "n": 3,
+      "rewards": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "seed-023": {
+      "mean": 0.10000000000000002,
+      "std": 1.3877787807814457e-17,
+      "n": 3,
+      "rewards": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    }
+  },
+  "per_tier": {
+    "1": {
+      "mean": 1.0,
+      "std": 0.0,
+      "n": 6
+    },
+    "2": {
+      "mean": 0.28,
+      "std": 0.36,
+      "n": 15
+    },
+    "3": {
+      "mean": 0.1,
+      "std": 0.0,
+      "n": 15
+    }
+  },
+  "overall": {
+    "mean": 0.32499999999999996,
+    "std": 0.3897114317029974,
+    "n": 36
+  },
+  "conditional_reward": {
+    "mean": 0.32499999999999996,
+    "std": 0.3897114317029974,
+    "n": 36
+  },
+  "outcome_rates": {
+    "rollouts_attempted": 36,
+    "rollouts_total": 36,
+    "rollouts_planned": null,
+    "scored_count": 36,
+    "scored_rate": 1.0,
+    "parse_success_rate": 1.0,
+    "format_failure_count": 0,
+    "format_failure_rate": 0.0,
+    "provider_failure_count": 0,
+    "provider_failure_rate": 0.0,
+    "scoring_failure_count": 0,
+    "scoring_failure_rate": 0.0,
+    "non_scored_count": 0,
+    "non_scored_rate": 0.0,
+    "infrastructure_failure_count": 0,
+    "infrastructure_failure_rate": 0.0,
+    "conditional_reward": {
+      "mean": 0.32499999999999996,
+      "n": 36
+    },
+    "overall_usable": {
+      "mean": 0.32499999999999996,
+      "definition": "conditional_reward.mean * scored_rate"
+    },
+    "run_validity": {
+      "status": "valid",
+      "reason": null
+    }
+  },
+  "overall_usable": {
+    "mean": 0.32499999999999996,
+    "definition": "conditional_reward.mean * scored_rate"
+  },
+  "run_validity": {
+    "status": "valid",
+    "reason": null
+  },
+  "infrastructure_failure_rate": 0.0
+}

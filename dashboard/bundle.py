@@ -198,6 +198,7 @@ def build_bundle(
     *,
     run_id: str,
     duplicate_warnings: list[str],
+    training: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     model_runs = [r for r in runs if not r.is_baseline]
     baseline_runs = [r for r in runs if r.is_baseline]
@@ -434,6 +435,7 @@ def build_bundle(
             "tier_breakdown": tier_breakdown,
             "component_breakdown": component_breakdown,
         },
+        "training": training or {"present": False, "versions": [], "figure_names": []},
     }
 
 

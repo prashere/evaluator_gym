@@ -1,0 +1,63 @@
+{
+  "cost_usd": {
+    "agent_input": 0.000254,
+    "agent_output": 0.0004,
+    "judge_input": 0.0,
+    "judge_output": 0.0,
+    "total": 0.000653,
+    "invoice_usd": 0.0,
+    "pricing_note": "invoice_usd=0 on free tiers; total is theoretical list-price equivalent"
+  },
+  "tokens": {
+    "input": 116355.0,
+    "output": 18265.0
+  },
+  "rollouts_completed": 36,
+  "rollouts_planned": 36,
+  "rollouts_attempted": 67,
+  "parse_success_rate": 0.5522388059701493,
+  "scored_rate": 0.5522388059701493,
+  "format_failure_rate": 0.0,
+  "provider_failure_rate": 0.44776119402985076,
+  "overall_usable": {
+    "mean": 0.5084577114427862,
+    "definition": "conditional_reward.mean * scored_rate"
+  },
+  "run_validity": {
+    "status": "valid",
+    "reason": null
+  },
+  "outcome_rates": {
+    "rollouts_attempted": 67,
+    "rollouts_total": 67,
+    "rollouts_planned": 36,
+    "scored_count": 37,
+    "scored_rate": 0.5522388059701493,
+    "parse_success_rate": 0.5522388059701493,
+    "format_failure_count": 0,
+    "format_failure_rate": 0.0,
+    "provider_failure_count": 30,
+    "provider_failure_rate": 0.44776119402985076,
+    "scoring_failure_count": 0,
+    "scoring_failure_rate": 0.0,
+    "non_scored_count": 30,
+    "non_scored_rate": 0.44776119402985076,
+    "infrastructure_failure_count": 0,
+    "infrastructure_failure_rate": 0.0,
+    "conditional_reward": {
+      "mean": 0.9207207207207209,
+      "n": 37
+    },
+    "overall_usable": {
+      "mean": 0.5084577114427862,
+      "definition": "conditional_reward.mean * scored_rate"
+    },
+    "run_validity": {
+      "status": "valid",
+      "reason": null
+    }
+  },
+  "stop_reason": null,
+  "provider_errors": 30,
+  "elapsed_seconds": 9.85
+}

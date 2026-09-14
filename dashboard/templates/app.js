@@ -476,6 +476,125 @@ function renderPatterns() {
   return html;
 }
 
+function trainingSpec(meta) {
+  if (!meta) return "";
+  const items = [
+    ["Model", meta.model],
+    ["Method", meta.method],
+    ["Beta", meta.beta_values],
+    ["Steps", meta.nominal_steps],
+    ["Group size", meta.group_size],
+    ["Train rubric", meta.train_rubric],
+    ["Split", meta.heldout_split],
+  ];
+  return `<ul class="training-spec">${items
+    .filter(([, value]) => value != null && value !== "")
+    .map(([label, value]) => `<li><span class="training-spec-label">${label}</span> ${value}</li>`)
+    .join("")}</ul>`;
+}
+
+function renderHeldoutComparison(comparison) {
+  if (!comparison) return "<p>No held-out comparison recorded.</p>";
+  const labels = Object.keys(comparison).filter((k) => !k.includes("rubric"));
+  const rows = labels
+    .map((label) => {
+      const row = comparison[label] || {};
+      return `<tr>
+        <td>${label}</td>
+        <td>${fmt(row.mean_reward_scored)}</td>
+        <td>${fmtPct(row.tier_1_exact_pass_rate)}</td>
+        <td>${fmtPct(row.tier_2_exact_pass_rate)}</td>
+        <td>${fmtPct(row.tier_3_exact_pass_rate)}</td>
+        <td>${fmtPct(row.parse_success_rate)}</td>
+      </tr>`;
+    })
+    .join("");
+  return `<table class="data-table">
+    <thead><tr>
+      <th>Checkpoint</th><th>Mean eval reward</th><th>Tier 1 exact</th><th>Tier 2 exact</th><th>Tier 3 exact</th><th>Parse rate</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function renderTrainingRunStats(runs) {
+  if (!runs || !runs.length) return "";
+  const rows = runs
+    .map((run) => {
+      const beta = run.beta != null ? String(run.beta) : run.run_name;
+      return `<tr>
+        <td>${run.run_name}</td>
+        <td>${beta}</td>
+        <td>${run.optimizer_applied_steps ?? "—"}</td>
+        <td>${run.skipped_steps ?? "—"}</td>
+        <td>${run.degenerate_group_steps ?? "—"}</td>
+      </tr>`;
+    })
+    .join("");
+  return `<table class="data-table">
+    <thead><tr><th>Run</th><th>β</th><th>Optimizer steps</th><th>Skipped steps</th><th>Degenerate groups</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function renderTrainingFigures(figures) {
+  if (!figures || !Object.keys(figures).length) {
+    return "<p>Figures not available for this run.</p>";
+  }
+  const labels = {
+    reward: "Mean training rubric reward",
+    kl: "Frozen-reference k3 KL",
+    entropy: "Policy token entropy",
+    "completion-length": "Mean completion length",
+    "per-tier-pass-rate": "Exact pass rate by tier (applied steps)",
+    "heldout-before-after": "Held-out eval rubric (Phase 04)",
+  };
+  const cards = Object.entries(figures)
+    .map(([key, src]) => {
+      const title = labels[key] || key;
+      return `<figure class="training-figure">
+        <figcaption>${title}</figcaption>
+        <img src="${src}" alt="${title}" loading="lazy" />
+      </figure>`;
+    })
+    .join("");
+  return `<div class="training-figure-grid">${cards}</div>`;
+}
+
+function renderTrainingFindings(findings) {
+  if (!findings?.paragraph) return "";
+  return `<div class="training-findings"><p>${findings.paragraph}</p></div>`;
+}
+
+function renderTrainingVersion(version) {
+  return `<section class="training-version">
+    <h2>${version.label}</h2>
+    ${trainingSpec(version.meta)}
+    <h3>Held-out (eval rubric)</h3>
+    ${renderHeldoutComparison(version.heldout_comparison)}
+    <h3>Run stats</h3>
+    ${renderTrainingRunStats(version.runs)}
+    <h3>Training curves</h3>
+    ${renderTrainingFigures(version.figures)}
+    <h3>What I took away</h3>
+    ${renderTrainingFindings(version.findings)}
+  </section>`;
+}
+
+function renderTraining() {
+  const training = DATA.training || {};
+  if (!training.present || !training.versions?.length) {
+    return `<section><h1>RL Training</h1>
+      <p class="lead">Phase 07 training artifacts were not found. Run <code>python -m dashboard.build</code> after placing artifacts under <code>results/training/</code> or <code>evaluator-gym-phase07*</code>.</p>
+    </section>`;
+  }
+  return `<section class="training-page">
+    <h1>RL Training</h1>
+    <p class="lead">Policy-gradient training on my reconciliation gym, with held-out tasks from a separate generator seed. Two attempts below. v1 trained on the same rubric as eval. v2 used a stricter training-only rubric after I saw the first run get gamed.</p>
+    ${training.versions.map(renderTrainingVersion).join("")}
+  </section>`;
+}
+
 function renderMethodology() {
   const m = DATA.meta;
   const keyMetrics = [
@@ -565,6 +684,7 @@ function render() {
     case "task": html = renderTaskDetail(param); break;
     case "inspect": html = renderInspector(param); break;
     case "patterns": html = renderPatterns(); break;
+    case "training": html = renderTraining(); break;
     case "sanity": html = renderOverview(); break;
     case "methodology": html = renderMethodology(); break;
     default: html = renderOverview();

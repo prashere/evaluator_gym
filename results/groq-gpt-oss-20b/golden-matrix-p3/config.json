@@ -1,0 +1,79 @@
+{
+  "run_id": "golden-matrix-p3",
+  "model": "groq/gpt-oss-20b",
+  "provider": "groq",
+  "api_model_id": "openai/gpt-oss-20b",
+  "capability_tier": "lightweight",
+  "provider_tier_label": "OpenAI: lower latency, local or specialized use cases",
+  "eval_matrix": "groq_open_oss_qwen",
+  "mode": "single",
+  "tier": "all",
+  "task_source": "seed",
+  "n": null,
+  "seed": 7,
+  "rollouts": 3,
+  "temperature": 0.7,
+  "max_cost_usd": 4.0,
+  "concurrency": 1,
+  "ruleset_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "generator_version": "1.0.0",
+  "rubric_version": "0.1.2",
+  "judge_model": "openai/gpt-oss-120b",
+  "judge_base_url": "https://api.groq.com/openai/v1",
+  "judge_temperature": 0.0,
+  "judge_prompt_version": "0.1.0",
+  "prompt_hashes": {
+    "single_turn_prompt_hash": "sha256:3fa1659d5a9ceb255480b9a265d7a46e1c9d08c0396fa76a29817d95a345c112",
+    "tool_prompt_hash": "sha256:610e7a2352497757b929a929d07ca05174ab1a26db47b503130b0fb3a96ecced",
+    "judge_prompt_hash": "sha256:006b1b1eb6bcaee52fba1245db57b8a770df2e5daca029d7b20c929f2967b1e5"
+  },
+  "package_version": "0.1.0",
+  "verifiers_pin": "66a60649^1",
+  "reward_weights": {
+    "retrieval": {
+      "field_accuracy": 1.0
+    },
+    "reconciliation_single": {
+      "decision_correct": 0.45,
+      "evidence_f1": 0.35,
+      "precedence_coherence": 0.1,
+      "calibration": 0.1,
+      "tag_support_judge": 0.0
+    },
+    "reconciliation_tool": {
+      "decision_correct": 0.4,
+      "evidence_f1": 0.3,
+      "precedence_coherence": 0.1,
+      "calibration": 0.1,
+      "tag_support_judge": 0.1
+    }
+  },
+  "config_fingerprint": "6df8c405797495bb7f758421c769037e4443d06c053389c0877606d6f83b5a71",
+  "stop_reason": null,
+  "provider_sampling_args": {
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "max_tokens": 2048,
+    "extra_body": {
+      "reasoning_format": "hidden"
+    }
+  },
+  "task_ids": [
+    "seed-001",
+    "seed-005",
+    "seed-016",
+    "seed-007",
+    "seed-009",
+    "seed-014",
+    "seed-013",
+    "seed-019",
+    "seed-021",
+    "seed-023",
+    "seed-020",
+    "seed-022"
+  ],
+  "benchmark_id": "golden-matrix-p3",
+  "benchmark_manifest_path": "benchmarks/golden-matrix-p3.json",
+  "benchmark_manifest_hash": "sha256:3a4263b1dee141050746bdf2b7ee166f91def393f00eed2f31d80058bb4cc2e1"
+}

@@ -1,0 +1,14 @@
+{
+  "cost_usd": {
+    "total": 0.0,
+    "invoice_usd": 0.0,
+    "pricing_note": "baseline \u2014 no model usage"
+  },
+  "tokens": {
+    "input": 0,
+    "output": 0
+  },
+  "rollouts_completed": 36,
+  "rollouts_planned": 36,
+  "elapsed_seconds": 0.0
+}

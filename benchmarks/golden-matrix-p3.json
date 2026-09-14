@@ -1,0 +1,27 @@
+{
+  "id": "golden-matrix-p3",
+  "version": "1.0.0",
+  "description": "Golden regression: 12 fixed seeds from tasks/eval_golden.json (2/5/5 tier split)",
+  "run_id": "golden-matrix-p3",
+  "tier": "all",
+  "task_source": "seed",
+  "task_ids": [
+    "seed-001",
+    "seed-005",
+    "seed-016",
+    "seed-007",
+    "seed-009",
+    "seed-014",
+    "seed-013",
+    "seed-019",
+    "seed-021",
+    "seed-023",
+    "seed-020",
+    "seed-022"
+  ],
+  "seed": 7,
+  "rollouts": 3,
+  "mode": "single",
+  "eval_matrix": "groq_open_oss_qwen",
+  "max_cost_usd": 4.0
+}

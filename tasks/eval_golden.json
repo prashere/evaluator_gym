@@ -1,8 +1,8 @@
 {
-  "version": "1.0.0",
-  "purpose": "Fixed golden regression suite — stratified seed subset between mini-matrix (3) and full matrix (23). Do not change task ids without updating rationale and re-baselining results.",
-  "default_run_id": "golden-matrix-b",
-  "minimum_per_tier": { "1": 2, "2": 5, "3": 3 },
+  "version": "1.1.0",
+  "purpose": "Fixed golden regression suite — 12 stratified seeds (2 tier-1, 5 tier-2, 5 tier-3). Primary dashboard eval matrix. Do not change task ids without updating rationale and re-baselining results.",
+  "default_run_id": "golden-matrix-p3",
+  "minimum_per_tier": { "1": 2, "2": 5, "3": 5 },
   "tasks": [
     {
       "id": "seed-001",
@@ -53,6 +53,16 @@
       "id": "seed-023",
       "tier": 3,
       "rationale": "Missing evidence — case context only (minimal files)"
+    },
+    {
+      "id": "seed-020",
+      "tier": 3,
+      "rationale": "Missing evidence — goods receipt quantity absent"
+    },
+    {
+      "id": "seed-022",
+      "tier": 3,
+      "rationale": "Missing evidence — vendor record absent"
     }
   ]
 }
