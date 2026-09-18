@@ -78,6 +78,7 @@ def verify_imports_v3() -> dict[str, str]:
         phase07_live,
         phase07_runtime,
         phase07v3_core,
+        phase07v3_notebook,
         phase07v3_runtime,
         sft_reference,
     )
@@ -85,6 +86,7 @@ def verify_imports_v3() -> dict[str, str]:
 
     for path in (
         Path(phase07v3_core.__file__ or ""),
+        Path(phase07v3_notebook.__file__ or ""),
         Path(phase07v3_runtime.__file__ or ""),
         Path(sft_reference.__file__ or ""),
         Path(evaluator_gym.__file__ or "").parent / "training_rubric" / "binary.py",
@@ -96,6 +98,7 @@ def verify_imports_v3() -> dict[str, str]:
     paths.update(
         {
             "phase07v3_core": phase07v3_core.__file__ or "",
+            "phase07v3_notebook": phase07v3_notebook.__file__ or "",
             "phase07v3_runtime": phase07v3_runtime.__file__ or "",
             "sft_reference": sft_reference.__file__ or "",
             "training_rubric_version": TRAINING_RUBRIC_VERSION_BINARY,
