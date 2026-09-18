@@ -6,9 +6,14 @@ import pytest
 
 from evaluator_gym.training.phase07v3_core import (
     BETAS,
+    DEFAULT_OUTPUT_ROOT_V3,
     GROUP_SIZE,
     MAX_TOTAL_COMPLETIONS,
     MIN_TIER2_TRAINABLE,
+    PRE_RL_MAX_ALLOCATED_GIB,
+    SMOKE_MAX_RESAMPLE_ATTEMPTS,
+    PREVIOUS_OUTPUT_ROOT_V3,
+    RESULTS_STAGING_ROOT_V3,
     SFT_GATE_TIER2_MIN,
     TARGET_OPTIMIZER_STEPS,
     TRAIN_N,
@@ -30,6 +35,11 @@ def test_v3_constants():
     assert BETAS == (0.01, 0.1)
     assert TRAINING_RUBRIC_VERSION_BINARY == "train-0.2.0"
     assert MAX_TOTAL_COMPLETIONS == 1800
+    assert SMOKE_MAX_RESAMPLE_ATTEMPTS == 8
+    assert PRE_RL_MAX_ALLOCATED_GIB == 2.0
+    assert DEFAULT_OUTPUT_ROOT_V3.name == "evaluator-gym-phase07-v3-run2"
+    assert PREVIOUS_OUTPUT_ROOT_V3.name == "evaluator-gym-phase07-v3"
+    assert RESULTS_STAGING_ROOT_V3.as_posix() == "results/training/phase07-v3-run2"
 
 
 def test_rloo_advantages_sum_to_zero():
