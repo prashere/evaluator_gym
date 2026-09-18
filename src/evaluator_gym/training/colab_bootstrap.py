@@ -69,3 +69,46 @@ def verify_imports_v2() -> dict[str, str]:
         }
     )
     return paths
+
+
+def verify_imports_v3() -> dict[str, str]:
+    import evaluator_gym
+    from evaluator_gym.training import (
+        phase07_core,
+        phase07_live,
+        phase07_runtime,
+        phase07v3_core,
+        phase07v3_runtime,
+        sft_reference,
+    )
+    from evaluator_gym.training_rubric.binary import TRAINING_RUBRIC_VERSION_BINARY
+
+    for path in (
+        Path(phase07v3_core.__file__ or ""),
+        Path(phase07v3_runtime.__file__ or ""),
+        Path(sft_reference.__file__ or ""),
+        Path(evaluator_gym.__file__ or "").parent / "training_rubric" / "binary.py",
+    ):
+        if not path.is_file():
+            raise RuntimeError(f"Missing training v3 module: {path}")
+
+    paths = verify_imports()
+    paths.update(
+        {
+            "phase07v3_core": phase07v3_core.__file__ or "",
+            "phase07v3_runtime": phase07v3_runtime.__file__ or "",
+            "sft_reference": sft_reference.__file__ or "",
+            "training_rubric_version": TRAINING_RUBRIC_VERSION_BINARY,
+        }
+    )
+    return paths
+
+
+def checkout_colab_branch(repo: Path | str, branch: str) -> str:
+    import subprocess
+
+    repo_path = Path(repo).resolve()
+    subprocess.run(["git", "fetch", "origin", branch], cwd=repo_path, check=True)
+    subprocess.run(["git", "checkout", branch], cwd=repo_path, check=True)
+    subprocess.run(["git", "pull", "--ff-only", "origin", branch], cwd=repo_path, check=True)
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo_path, text=True).strip()
