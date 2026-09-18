@@ -51,7 +51,7 @@ PREFLIGHT_PROBES_PER_TASK = 8
 BETAS = (0.01, 0.1)
 CHECKPOINT_OPTIMIZER_INTERVAL = 10
 DEFAULT_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3")
-DEFAULT_COLAB_BRANCH = "phase07-v3"
+DEFAULT_COLAB_BRANCH = "rl_v3"
 
 
 def validate_phase07v3_splits(train_rows: list[TaskRow], heldout_rows: list[TaskRow]) -> None:
