@@ -9,9 +9,11 @@ from evaluator_gym.training.phase07v3_core import (
     DEFAULT_OUTPUT_ROOT_V3,
     GROUP_SIZE,
     MAX_TOTAL_COMPLETIONS,
+    MIN_MODEL_MAX_POSITION,
     MIN_TIER2_TRAINABLE,
     MODEL_ID,
     PRE_RL_MAX_ALLOCATED_GIB,
+    validate_model_max_position,
     PREVIOUS_OUTPUT_ROOT_V3,
     RESULTS_STAGING_ROOT_V3,
     SFT_GATE_TIER2_MIN,
@@ -38,10 +40,17 @@ def test_v3_constants():
     assert MAX_TOTAL_COMPLETIONS == 1800
     assert SMOKE_MAX_RESAMPLE_ATTEMPTS == 8
     assert PRE_RL_MAX_ALLOCATED_GIB == 2.0
-    assert MODEL_ID == "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    assert MODEL_ID == "Qwen/Qwen2.5-1.5B-Instruct"
+    assert MIN_MODEL_MAX_POSITION == 5600
     assert DEFAULT_OUTPUT_ROOT_V3.name == "evaluator-gym-phase07-v3"
     assert PREVIOUS_OUTPUT_ROOT_V3.name == "evaluator-gym-phase07-v3-run2"
     assert RESULTS_STAGING_ROOT_V3.as_posix() == "results/training/phase07-v3"
+
+
+def test_validate_model_max_position_rejects_short_context():
+    validate_model_max_position(32768)
+    with pytest.raises(RuntimeError, match="2048"):
+        validate_model_max_position(2048)
 
 
 def test_rloo_advantages_sum_to_zero():

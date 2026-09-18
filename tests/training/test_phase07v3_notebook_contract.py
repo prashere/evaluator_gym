@@ -43,10 +43,8 @@ def test_notebook_exists():
     assert NOTEBOOK.is_file()
 
 
-def test_v3_model_between_v1_and_v2():
-    assert "0.5B" not in MODEL_ID or "TinyLlama" in MODEL_ID
-    assert MODEL_ID != "Qwen/Qwen2.5-1.5B-Instruct"
-    assert "1.1B" in MODEL_ID or "1B" in MODEL_ID or "TinyLlama" in MODEL_ID
+def test_v3_model_long_context_qwen():
+    assert MODEL_ID == "Qwen/Qwen2.5-1.5B-Instruct"
 
 
 def test_notebook_imports_v3_helpers():
@@ -63,6 +61,8 @@ def test_notebook_v2_memory_pattern():
     assert "torch.cuda.empty_cache()" in source
     assert "model.eval()" in source
     assert "torch.inference_mode()" in source
+    assert "validate_model_max_position" in source
+    assert "POLICY_MAX_POSITION" in source
     monolithic = [
         cell
         for cell in _code_cells()

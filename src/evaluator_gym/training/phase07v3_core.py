@@ -27,15 +27,13 @@ from evaluator_gym.training.phase07_core import (
 from evaluator_gym.training.phase07v2_core import (
     CURRICULUM_TIER2_STEPS,
     CURRICULUM_TIER3_STEPS,
-)
-
-MODEL_ID = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-MODEL_REVISION = "fe8a4ea1ffedaf415f4da2f062534de366a451e6"
-MODEL_SELECTION_NOTE = (
-    "TinyLlama-1.1B-Chat (~1.1B params): between v1 Qwen2.5-0.5B (no tier 2/3 exact pass) "
-    "and v2 Qwen2.5-1.5B (Colab T4 OOM in v3 smoke); 4-bit QLoRA on default Colab GPU."
+    MODEL_ID,
+    MODEL_REVISION,
+    MODEL_SELECTION_NOTE,
 )
 from evaluator_gym.training_rubric.binary import TRAINING_RUBRIC_VERSION_BINARY
+
+MIN_MODEL_MAX_POSITION = 5600
 
 TRAINING_RUBRIC_VERSION_EXPECTED = TRAINING_RUBRIC_VERSION_BINARY
 EVAL_RUBRIC_VERSION_EXPECTED = "0.1.2"
@@ -61,6 +59,16 @@ DEFAULT_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3")
 PREVIOUS_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3-run2")
 RESULTS_STAGING_ROOT_V3 = Path("results/training/phase07-v3")
 DEFAULT_COLAB_BRANCH = "rl_v3"
+
+
+def validate_model_max_position(max_position: int) -> None:
+    if max_position < MIN_MODEL_MAX_POSITION:
+        raise RuntimeError(
+            f"Model max_position_embeddings={max_position} is below Phase 07 minimum "
+            f"{MIN_MODEL_MAX_POSITION} (tier 2/3 prompts are ~4567 tokens plus up to "
+            f"{MAX_COMPLETION_TOKENS} completion tokens). Qwen2.5-0.5B/1.5B-Instruct "
+            "support 32768; TinyLlama 1.1B (2048) cannot run this benchmark."
+        )
 
 
 def validate_phase07v3_splits(train_rows: list[TaskRow], heldout_rows: list[TaskRow]) -> None:
