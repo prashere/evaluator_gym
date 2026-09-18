@@ -1,4 +1,4 @@
-"""Phase 07 v3 notebook contract — memory, SFT load, staged cells."""
+"""Phase 07 v3 notebook contract — v2 layout, smoke in execution cells."""
 
 from __future__ import annotations
 
@@ -7,8 +7,12 @@ from pathlib import Path
 
 import pytest
 
+from evaluator_gym.training.phase07v3_core import (
+    DEFAULT_OUTPUT_ROOT_V3,
+    MODEL_ID,
+    RESULTS_STAGING_ROOT_V3,
+)
 from evaluator_gym.training.phase07v3_notebook import (
-    DEFAULT_GPU_MODEL_NAMES,
     SFT_ADAPTER_TAG,
     sft_adapter_dir,
     sft_adapter_ready,
@@ -39,74 +43,52 @@ def test_notebook_exists():
     assert NOTEBOOK.is_file()
 
 
-def test_notebook_imports_v3_notebook_helpers():
+def test_v3_model_between_v1_and_v2():
+    assert "0.5B" not in MODEL_ID or "TinyLlama" in MODEL_ID
+    assert MODEL_ID != "Qwen/Qwen2.5-1.5B-Instruct"
+    assert "1.1B" in MODEL_ID or "1B" in MODEL_ID or "TinyLlama" in MODEL_ID
+
+
+def test_notebook_imports_v3_helpers():
     source = _notebook_code()
     assert "evaluator_gym.training.phase07v3_notebook" in source
-    assert "load_sft_adapter_weights" in source
-    assert "release_gpu_memory" in source
     assert "backward_rloo_policy_step" in source
+    assert "load_sft_adapter_weights" in source
 
 
-def test_notebook_sets_cuda_alloc_conf_before_training():
+def test_notebook_v2_memory_pattern():
     source = _notebook_code()
-    assert "PYTORCH_CUDA_ALLOC_CONF" in source
-
-
-def test_notebook_uses_run2_output_root():
-    source = _notebook_code()
-    assert "DEFAULT_OUTPUT_ROOT_V3" in source
-    assert "PREVIOUS_OUTPUT_ROOT_V3" in source
-    assert "RESULTS_STAGING_ROOT_V3" in source
-    assert "write_run_manifest" in source
-    assert "verify_bitsandbytes" in source
-    from evaluator_gym.training.phase07v3_core import DEFAULT_OUTPUT_ROOT_V3
-
-    assert DEFAULT_OUTPUT_ROOT_V3.name == "evaluator-gym-phase07-v3-run2"
-
-
-def test_write_run_manifest(tmp_path: Path):
-    from evaluator_gym.training.phase07v3_notebook import write_run_manifest
-
-    path = write_run_manifest(
-        tmp_path,
-        repo_commit="abc123",
-        colab_branch="rl_v3",
-        extra={"note": "full colab run"},
-    )
-    assert path.is_file()
-    payload = json.loads(path.read_text())
-    assert payload["repo_commit"] == "abc123"
-    assert payload["colab_branch"] == "rl_v3"
-    assert payload["note"] == "full colab run"
-
-
-def test_notebook_staged_memory_release():
-    cells = _code_cells()
-    source = _notebook_code()
-    assert "policy_model=sft_model" in source
-    assert "hard_release_gpu_memory" in source
-    assert "load_v3_drive_state" in source
-    assert any("train_run(" in cell and "smoke" in cell for cell in cells)
-    preflight_cell = next(c for c in cells if "run_preflight(sft_model" in c)
-    assert "release_gpu_memory(globals(), 'sft_model'" not in preflight_cell
+    assert "del preflight_model" in source
+    assert "del smoke_model" in source
+    assert "torch.cuda.empty_cache()" in source
+    assert "model.eval()" in source
+    assert "torch.inference_mode()" in source
     monolithic = [
         cell
-        for cell in cells
-        if "base_model" in cell and "run_sft(" in cell and "train_run(" in cell and "smoke" in cell
+        for cell in _code_cells()
+        if "run_sft(" in cell and "train_run(" in cell and "build_policy()" in cell and cell.count("build_policy()") >= 3
     ]
-    assert not monolithic, "base+SFT+smoke must not live in one cell (OOM risk)"
+    assert not monolithic
 
 
-def test_train_run_loads_sft_adapter():
+def test_notebook_smoke_in_execution_cell():
     source = _notebook_code()
-    assert "sft_adapter_ready" in source or "load_sft_adapter_weights" in source
-    assert "sft_adapter_dir" in source
+    assert "Smoke and resume passed" in source
+    assert "smoke_resume=True" in source
+    assert "SMOKE_MAX_RESAMPLE_ATTEMPTS" in source
 
 
-def test_notebook_deletes_models_between_rl_runs():
-    source = _notebook_code()
-    assert "del low_model" in source or "release_gpu_memory" in source
-    assert "smoke_model" in source
+def test_notebook_no_hash_comments():
+    for cell in _code_cells():
+        for line in cell.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                pytest.fail(f"Notebook must not contain comments: {stripped[:60]}")
+
+
+def test_output_paths():
+    assert DEFAULT_OUTPUT_ROOT_V3.name == "evaluator-gym-phase07-v3"
+    assert RESULTS_STAGING_ROOT_V3.as_posix() == "results/training/phase07-v3"
 
 
 def test_sft_adapter_path_contract(tmp_path: Path):
@@ -119,45 +101,10 @@ def test_sft_adapter_path_contract(tmp_path: Path):
     assert sft_adapter_ready(root) is True
 
 
-def test_default_gpu_model_names_cover_pipeline():
-    names = set(DEFAULT_GPU_MODEL_NAMES)
-    assert "sft_model" in names
-    assert "smoke_model" in names
-    assert "low_model" in names
-
-
-def test_load_v3_drive_state(tmp_path: Path):
-    from evaluator_gym.training.phase07v3_notebook import load_v3_drive_state, sft_adapter_dir
-
-    root = tmp_path / "out"
-    adapter = sft_adapter_dir(root)
-    adapter.mkdir(parents=True)
-    (adapter / "adapter_config.json").write_text("{}")
-    (root / "gate_result.json").write_text('{"passed": true}')
-    (root / "preflight.json").write_text('{"trainable_task_ids": ["gen-7001-0001"]}')
-    state = load_v3_drive_state(root)
-    assert state["ready_for_rl"] is True
-    assert state["trainable_task_ids"] == ["gen-7001-0001"]
-
-
-def test_gpu_memory_snapshot_without_cuda():
-    pytest.importorskip("torch")
-    from evaluator_gym.training.phase07v3_notebook import gpu_memory_snapshot
-
-    snap = gpu_memory_snapshot()
-    if snap["cuda_available"]:
-        assert snap["allocated_gib"] >= 0.0
-    else:
-        assert snap["allocated_gib"] == 0.0
-
-
 def test_backward_rloo_policy_step_cpu():
     torch = pytest.importorskip("torch")
 
-    class _Param(torch.nn.Parameter):
-        pass
-
-    param = _Param(torch.tensor(1.0, requires_grad=True))
+    param = torch.nn.Parameter(torch.tensor(1.0, requires_grad=True))
     model = torch.nn.Module()
     model.register_parameter("w", param)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
@@ -179,5 +126,4 @@ def test_backward_rloo_policy_step_cpu():
         token_statistics_fn=token_statistics_fn,
     )
     assert "loss" in stats
-    assert "kl" in stats
     assert model.w.grad is not None

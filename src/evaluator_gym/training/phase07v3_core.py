@@ -27,8 +27,13 @@ from evaluator_gym.training.phase07_core import (
 from evaluator_gym.training.phase07v2_core import (
     CURRICULUM_TIER2_STEPS,
     CURRICULUM_TIER3_STEPS,
-    MODEL_ID,
-    MODEL_REVISION,
+)
+
+MODEL_ID = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+MODEL_REVISION = "fe8a4ea1ffedaf415f4da2f062534de366a451e6"
+MODEL_SELECTION_NOTE = (
+    "TinyLlama-1.1B-Chat (~1.1B params): between v1 Qwen2.5-0.5B (no tier 2/3 exact pass) "
+    "and v2 Qwen2.5-1.5B (Colab T4 OOM in v3 smoke); 4-bit QLoRA on default Colab GPU."
 )
 from evaluator_gym.training_rubric.binary import TRAINING_RUBRIC_VERSION_BINARY
 
@@ -52,9 +57,9 @@ SFT_GATE_TIER2_COMFORT = 0.15
 PREFLIGHT_PROBES_PER_TASK = 8
 BETAS = (0.01, 0.1)
 CHECKPOINT_OPTIMIZER_INTERVAL = 10
-DEFAULT_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3-run2")
-PREVIOUS_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3")
-RESULTS_STAGING_ROOT_V3 = Path("results/training/phase07-v3-run2")
+DEFAULT_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3")
+PREVIOUS_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3-run2")
+RESULTS_STAGING_ROOT_V3 = Path("results/training/phase07-v3")
 DEFAULT_COLAB_BRANCH = "rl_v3"
 
 
