@@ -81,6 +81,8 @@ def test_notebook_memory_contract():
     source = _notebook_code()
     assert "logits_to_keep" in source or "token_statistics" in source
     assert "attn_implementation='sdpa'" in source
+    assert "inference_mode" not in source
+    assert "torch.no_grad()" in source
     assert "PagedAdamW8bit" in Path(
         __import__("evaluator_gym.training.phase07v3_notebook", fromlist=["build_8bit_optimizer"]).__file__
     ).read_text(encoding="utf-8")
@@ -116,6 +118,17 @@ def test_sft_adapter_path_contract(tmp_path: Path):
     adapter.mkdir(parents=True)
     (adapter / "adapter_config.json").write_text("{}")
     assert sft_adapter_ready(root) is True
+
+
+def test_ids_for_autograd_escapes_inference_mode():
+    torch = pytest.importorskip("torch")
+    from evaluator_gym.training.phase07v3_notebook import ids_for_autograd
+
+    with torch.inference_mode():
+        tensor = torch.tensor([1, 2, 3])
+    cloned = ids_for_autograd(tensor)
+    assert torch.is_inference(tensor)
+    assert not torch.is_inference(cloned)
 
 
 def test_backward_rloo_policy_step_cpu():

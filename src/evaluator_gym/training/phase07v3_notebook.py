@@ -154,11 +154,16 @@ def assert_peak_within_budget(*, limit_gib: float = PEAK_STEP_GIB, label: str = 
     return snap
 
 
+def ids_for_autograd(tensor: Any) -> Any:
+    return tensor.detach().clone()
+
+
 def token_statistics(model: Any, sample: dict[str, Any]) -> tuple[Any, Any, Any]:
     import torch
 
-    tokens = torch.cat([sample["prompt_ids"], sample["completion_ids"]]).unsqueeze(0)
-    targets = sample["completion_ids"]
+    prompt_ids = ids_for_autograd(sample["prompt_ids"])
+    targets = ids_for_autograd(sample["completion_ids"])
+    tokens = torch.cat([prompt_ids, targets]).unsqueeze(0)
     keep = int(targets.numel()) + 1
     policy_logits = model(tokens, logits_to_keep=keep).logits[0, :-1].float()
     policy_token_logp = torch.log_softmax(policy_logits, dim=-1).gather(

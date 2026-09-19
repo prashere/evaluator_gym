@@ -268,7 +268,7 @@ def render_prompt(task, tokenizer):
 
 def generate_one(model, tokenizer, encoded, prompt_length, seed):
     torch.manual_seed(seed)
-    with torch.inference_mode():
+    with torch.no_grad():
         output = model.generate(
             **encoded,
             do_sample=True,
@@ -277,7 +277,7 @@ def generate_one(model, tokenizer, encoded, prompt_length, seed):
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
-    completion_ids = output[0, prompt_length:].detach()
+    completion_ids = output[0, prompt_length:].detach().clone()
     text = tokenizer.decode(completion_ids, skip_special_tokens=True)
     return completion_ids, text
 
@@ -314,8 +314,8 @@ def generate_valid_group(model, tokenizer, task, nominal_step, rejection_path, l
             if training_reward is None:
                 append_jsonl(rejection_path, candidate)
                 continue
-            candidate['prompt_ids'] = encoded['input_ids'][0].detach()
-            candidate['completion_ids'] = completion_ids
+            candidate['prompt_ids'] = encoded['input_ids'][0].detach().clone()
+            candidate['completion_ids'] = completion_ids.detach().clone()
             accepted = candidate
             break
         if accepted is None:
