@@ -5,8 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from evaluator_gym.training.phase07_runtime import MockCompletionGenerator
 from evaluator_gym.training.phase07v3_core import build_phase07v3_splits, build_training_schedule_v3
 from evaluator_gym.training.phase07v3_runtime import (
@@ -14,20 +12,22 @@ from evaluator_gym.training.phase07v3_runtime import (
     train_run_v3_cpu,
 )
 from evaluator_gym.training.sft_reference import build_sft_examples, format_reference_completion
+from evaluator_gym.training_rubric import TRAINING_RUBRIC_VERSION
 
 
 def _exact_completion(task: dict) -> str:
     return format_reference_completion(ground_truth=task["ground_truth"], info=task["info"])
 
 
-def test_binary_scoring_exact_pass(tmp_path: Path):
+def test_dual_scoring_uses_train_010(tmp_path: Path):
     _, _, train_rows, _ = build_phase07v3_splits()
-    task = train_rows[0].as_dict()
+    task = next(row.as_dict() for row in train_rows if row.tier == 2)
     text = _exact_completion(task)
     training_reward, eval_reward, parse_result, _ = score_text_dual_v3_sync(task, text)
     assert parse_result["ok"]
     assert training_reward == 1.0
     assert eval_reward == 1.0
+    assert TRAINING_RUBRIC_VERSION == "train-0.1.0"
 
 
 def test_sft_examples_cover_train_rows():
@@ -60,7 +60,9 @@ def test_train_run_v3_cpu_with_mixed_mock(tmp_path: Path):
         apply_optimizer=apply_optimizer,
     )
     assert summary["optimizer_applied_steps"] >= 1
+    assert summary["training_rubric_version"] == "train-0.1.0"
     metrics = (tmp_path / "cpu-smoke" / "metrics.jsonl").read_text().strip().splitlines()
     row = json.loads(metrics[0])
     assert row.get("advantage_estimator") == "rloo"
     assert row.get("resample_attempts") is not None
+    assert row.get("training_rubric_version") == "train-0.1.0"

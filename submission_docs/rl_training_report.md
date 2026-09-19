@@ -92,3 +92,9 @@ I read sample transcripts when JSON status was `requires_manual_transcript_revie
 I ran two KL values per version, kept train and held-out generator seeds disjoint, scored held-out only with the eval rubric, and looked for reward hacking before and after the training rubric change. The pipeline behaved as an experiment platform: curves, held-out splits, and exploit checks all landed in git.
 
 The learning outcome itself was negative. A small model on a sparse, partially gameable reward did not gain tier-2/3 exact pass on held-out tasks. v2 removed tag spam but also erased the small pre-training wins the base 1.5B had. I report that plainly rather than highlighting a training reward spike that did not transfer to eval scoring.
+
+---
+
+## Version 3 (in progress)
+
+v3 keeps the v2 1.5B Instruct checkpoint and `train-0.1.0` training rubric. It adds reference-JSON SFT with a runtime restart before RL, RLOO advantages, bounded mixed-group resampling, a 256-token completion cap, group size 4, and a peak-VRAM abort on Colab T4. Held-out scoring is still eval rubric 0.1.2. No v3 metrics are reported here until a run is committed under `results/training/phase07-v3/`.

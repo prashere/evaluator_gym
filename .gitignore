@@ -38,6 +38,8 @@ benchmarks/*
 # Colab / local RL artifact directories
 evaluator-gym-phase07/
 evaluator-gym-phase07-v2/
+evaluator-gym-phase07-v3/
+evaluator-gym-phase07-v3-run2/
 
 # Local notebooks (committed notebooks in git stay tracked)
 notebooks/*_executed.ipynb

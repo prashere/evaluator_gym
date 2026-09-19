@@ -187,7 +187,7 @@ dashboard/build.py             (static leaderboard from committed results/)
 | Eval harness     | `src/evaluator_gym/eval/`                                    | Model rollouts → `results/`                             |
 | Dashboard        | `dashboard/`                                                 | Offline build from `results/`                           |
 | Sandbox          | `src/evaluator_gym/sandbox/`                                 | FastAPI service; public score breakdown only            |
-| Training         | `src/evaluator_gym/training/`, notebooks                     | Colab QLoRA + group-relative policy gradient            |
+| Training         | `src/evaluator_gym/training/`, notebooks                     | Colab QLoRA, reference SFT, group-relative RLOO         |
 
 
 CI runs `scripts/validate_tasks.py` (schema, GT recomputation, leakage checks) and pytest, including hand-audited fidelity cases that are independent of the reference loop.

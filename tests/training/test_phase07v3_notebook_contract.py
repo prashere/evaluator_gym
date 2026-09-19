@@ -1,4 +1,4 @@
-"""Phase 07 v3 notebook contract — v2 layout, smoke in execution cells."""
+"""Phase 07 v3 notebook contract — Colab cells, no comments, memory-safe helpers."""
 
 from __future__ import annotations
 
@@ -9,6 +9,8 @@ import pytest
 
 from evaluator_gym.training.phase07v3_core import (
     DEFAULT_OUTPUT_ROOT_V3,
+    GROUP_SIZE,
+    MAX_COMPLETION_TOKENS,
     MODEL_ID,
     RESULTS_STAGING_ROOT_V3,
 )
@@ -21,20 +23,22 @@ from evaluator_gym.training.phase07v3_notebook import (
 NOTEBOOK = Path(__file__).resolve().parents[2] / "notebooks" / "rl_training_v3_notebook.ipynb"
 
 
+def _notebook() -> dict:
+    return json.loads(NOTEBOOK.read_text(encoding="utf-8"))
+
+
 def _notebook_code() -> str:
-    notebook = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
     return "\n\n".join(
         "".join(cell.get("source", []))
-        for cell in notebook["cells"]
+        for cell in _notebook()["cells"]
         if cell.get("cell_type") == "code"
     )
 
 
 def _code_cells() -> list[str]:
-    notebook = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
     return [
         "".join(cell.get("source", []))
-        for cell in notebook["cells"]
+        for cell in _notebook()["cells"]
         if cell.get("cell_type") == "code"
     ]
 
@@ -43,8 +47,21 @@ def test_notebook_exists():
     assert NOTEBOOK.is_file()
 
 
-def test_v3_model_long_context_qwen():
+def test_notebook_has_no_markdown_or_comments():
+    notebook = _notebook()
+    assert all(cell.get("cell_type") == "code" for cell in notebook["cells"])
+    for cell in _code_cells():
+        for line in cell.splitlines():
+            if line.strip().startswith("#"):
+                pytest.fail(f"Notebook must not contain comments: {line.strip()[:80]}")
+
+
+def test_v3_model_and_memory_constants():
     assert MODEL_ID == "Qwen/Qwen2.5-1.5B-Instruct"
+    assert GROUP_SIZE == 4
+    assert MAX_COMPLETION_TOKENS == 256
+    assert DEFAULT_OUTPUT_ROOT_V3.name == "evaluator-gym-phase07-v3"
+    assert RESULTS_STAGING_ROOT_V3.as_posix() == "results/training/phase07-v3"
 
 
 def test_notebook_imports_v3_helpers():
@@ -52,43 +69,43 @@ def test_notebook_imports_v3_helpers():
     assert "evaluator_gym.training.phase07v3_notebook" in source
     assert "backward_rloo_policy_step" in source
     assert "load_sft_adapter_weights" in source
+    assert "token_statistics" in source
+    assert "sft_completion_loss" in source
+    assert "train-0.1.0" in source
+    assert "train-0.2.0" not in source
+    assert "score_binary" not in source
+    assert "TRAINING_RUBRIC_VERSION_BINARY" not in source
 
 
-def test_notebook_v2_memory_pattern():
+def test_notebook_memory_contract():
     source = _notebook_code()
-    assert "del preflight_model" in source
-    assert "del smoke_model" in source
-    assert "torch.cuda.empty_cache()" in source
-    assert "model.eval()" in source
-    assert "torch.inference_mode()" in source
-    assert "validate_model_max_position" in source
-    assert "POLICY_MAX_POSITION" in source
+    assert "logits_to_keep" in source or "token_statistics" in source
+    assert "attn_implementation='sdpa'" in source
+    assert "PagedAdamW8bit" in Path(
+        __import__("evaluator_gym.training.phase07v3_notebook", fromlist=["build_8bit_optimizer"]).__file__
+    ).read_text(encoding="utf-8")
+    assert "assert_peak_within_budget" in source
+    assert "assert_gpu_headroom" in source
+    assert "release_gpu_memory" in source
+    assert "SFT_ADAPTER_SAVED" in source
+    assert "Smoke and resume passed" in source
+    assert "PYTORCH_CUDA_ALLOC_CONF" in source
+    assert "git', 'checkout'" in source or "git\", \"checkout\"" in source
+    assert "rl_v3" in source
+
+
+def test_notebook_not_monolithic():
     monolithic = [
         cell
         for cell in _code_cells()
-        if "run_sft(" in cell and "train_run(" in cell and "build_policy()" in cell and cell.count("build_policy()") >= 3
+        if "run_sft(" in cell and "train_run(" in cell and "build_policy()" in cell
     ]
     assert not monolithic
-
-
-def test_notebook_smoke_in_execution_cell():
-    source = _notebook_code()
-    assert "Smoke and resume passed" in source
-    assert "smoke_resume=True" in source
-    assert "SMOKE_MAX_RESAMPLE_ATTEMPTS" in source
-
-
-def test_notebook_no_hash_comments():
-    for cell in _code_cells():
-        for line in cell.splitlines():
-            stripped = line.strip()
-            if stripped.startswith("#"):
-                pytest.fail(f"Notebook must not contain comments: {stripped[:60]}")
-
-
-def test_output_paths():
-    assert DEFAULT_OUTPUT_ROOT_V3.name == "evaluator-gym-phase07-v3"
-    assert RESULTS_STAGING_ROOT_V3.as_posix() == "results/training/phase07-v3"
+    sft_cells = [cell for cell in _code_cells() if "SFT_ADAPTER_SAVED" in cell]
+    train_cells = [cell for cell in _code_cells() if "def train_run(" in cell]
+    assert sft_cells
+    assert train_cells
+    assert sft_cells[0] != train_cells[0]
 
 
 def test_sft_adapter_path_contract(tmp_path: Path):

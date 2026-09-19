@@ -16,6 +16,11 @@ V2_PATHS = (
     ROOT / "results" / "training" / "phase07-v2",
     ROOT / "evaluator-gym-phase07-v2",
 )
+V3_PATHS = (
+    ROOT / "results" / "training" / "phase07-v3",
+    ROOT / "evaluator-gym-phase07-v3",
+    ROOT / "evaluator-gym-phase07-v3-run2",
+)
 
 FIGURE_NAMES = (
     "reward",
@@ -201,7 +206,31 @@ def load_training_bundle() -> dict[str, Any]:
         },
     )
 
-    versions = [v for v in (v1, v2) if v is not None]
+    v3 = _load_version(
+        version_key="v3",
+        label="Phase 07 v3",
+        search_paths=V3_PATHS,
+        run_names=["smoke", "beta-0.01", "beta-0.1"],
+        meta={
+            "model": "Qwen2.5-1.5B-Instruct",
+            "method": "QLoRA 1.5B + reference SFT + RLOO + mixed-group resampling + KL",
+            "beta_values": "0.01, 0.1",
+            "nominal_steps": 30,
+            "group_size": 4,
+            "train_rubric": "train-0.1.0 (eval still 0.1.2)",
+            "heldout_split": "train seed 7001, held-out pool seed 9101, 3 rollouts per task",
+        },
+        findings={
+            "paragraph": (
+                "v3 starts from the same 1.5B Instruct checkpoint as v2, warm-starts on reference JSON, "
+                "then runs group-relative RLOO with bounded mixed-group resampling. "
+                "Held-out numbers still use eval rubric 0.1.2. Artifacts load when present under "
+                "results/training/phase07-v3."
+            ),
+        },
+    )
+
+    versions = [v for v in (v1, v2, v3) if v is not None]
     return {
         "present": bool(versions),
         "versions": versions,
