@@ -1,4 +1,4 @@
-"""Phase 07 v3 Colab notebook helpers — memory, SFT adapter load, RL step."""
+"""Phase 07 v3 Colab helpers — VRAM budget, SFT adapter I/O, per-sample RLOO step."""
 
 from __future__ import annotations
 
@@ -8,11 +8,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from evaluator_gym.training.phase07v3_core import PRE_RL_MAX_ALLOCATED_GIB
+from evaluator_gym.training.phase07v3_core import PEAK_STEP_GIB, PRE_RL_MAX_ALLOCATED_GIB
 
 SFT_RUN_NAME = "sft"
 SFT_ADAPTER_TAG = "final-adapter"
 DEFAULT_GPU_MODEL_NAMES = (
+    "policy_model",
+    "policy_tokenizer",
     "base_model",
     "base_tokenizer",
     "sft_model",
@@ -36,7 +38,6 @@ def write_run_manifest(
     output_root: Path | str,
     *,
     repo_commit: str,
-    colab_branch: str,
     extra: dict[str, Any] | None = None,
 ) -> Path:
     root = Path(output_root)
@@ -44,7 +45,6 @@ def write_run_manifest(
     manifest = {
         "pipeline": "phase07-v3",
         "output_root": str(root),
-        "colab_branch": colab_branch,
         "repo_commit": repo_commit,
         "started_at": datetime.now(timezone.utc).isoformat(),
         **(extra or {}),
@@ -57,11 +57,9 @@ def write_run_manifest(
 def verify_bitsandbytes() -> str:
     import bitsandbytes as bnb
 
-    version = getattr(bnb, "functional", None)
-    if version is None:
+    if getattr(bnb, "functional", None) is None:
         raise RuntimeError(
-            "bitsandbytes is broken (missing bnb.functional). "
-            "Restart the runtime, re-run setup, then: pip install -U bitsandbytes==0.47.0"
+            "bitsandbytes is broken (missing bnb.functional). Restart the runtime."
         )
     return getattr(bnb, "__version__", "unknown")
 
@@ -111,38 +109,19 @@ def log_gpu_memory(label: str) -> dict[str, float | bool]:
     return snap
 
 
-def release_gpu_memory(
-    scope: dict[str, Any] | None = None,
-    *names: str,
-) -> list[str]:
+def release_gpu_memory(scope: dict[str, Any] | None = None, *names: str) -> list[str]:
     import torch
 
     removed: list[str] = []
-    target = scope
     to_drop = names or DEFAULT_GPU_MODEL_NAMES
-    if target is not None:
+    if scope is not None:
         for name in to_drop:
-            if name in target:
-                del target[name]
+            if name in scope:
+                del scope[name]
                 removed.append(name)
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-    return removed
-
-
-def hard_release_gpu_memory(
-    scope: dict[str, Any] | None = None,
-    *names: str,
-) -> list[str]:
-    import torch
-
-    removed = release_gpu_memory(scope, *names)
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.synchronize()
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
     return removed
 
 
@@ -158,43 +137,55 @@ def assert_gpu_headroom(
     if allocated > max_allocated_gib:
         raise RuntimeError(
             f"GPU memory too high before {label}: {allocated:.3f} GiB allocated "
-            f"(limit {max_allocated_gib:.3f} GiB). Run hard_release_gpu_memory() on all "
-            "policy handles, clear Colab Out refs, then retry."
+            f"(limit {max_allocated_gib:.3f} GiB). Restart the runtime; do not empty_cache."
         )
     return snap
 
 
-def load_v3_drive_state(output_root: Path | str) -> dict[str, Any]:
-    root = Path(output_root)
-    state: dict[str, Any] = {
-        "output_root": str(root),
-        "sft_adapter_ready": sft_adapter_ready(root),
-        "ready_for_rl": False,
-    }
-    gate_path = root / "gate_result.json"
-    preflight_path = root / "preflight.json"
-    base_path = root / "base" / "heldout_summary.json"
-    post_sft_path = root / "post_sft" / "heldout_summary.json"
+def assert_peak_within_budget(*, limit_gib: float = PEAK_STEP_GIB, label: str = "step") -> dict[str, float | bool]:
+    snap = gpu_memory_snapshot()
+    if not snap["cuda_available"]:
+        return snap
+    peak = float(snap["max_allocated_gib"])
+    if peak > limit_gib:
+        raise RuntimeError(
+            f"Peak GPU allocation {peak:.3f} GiB exceeded {label} budget {limit_gib:.3f} GiB."
+        )
+    return snap
 
-    if gate_path.is_file():
-        state["gate"] = json.loads(gate_path.read_text(encoding="utf-8"))
-    if preflight_path.is_file():
-        state["preflight"] = json.loads(preflight_path.read_text(encoding="utf-8"))
-    if base_path.is_file():
-        state["base_heldout"] = json.loads(base_path.read_text(encoding="utf-8"))
-    if post_sft_path.is_file():
-        state["post_sft_heldout"] = json.loads(post_sft_path.read_text(encoding="utf-8"))
 
-    gate = state.get("gate") or {}
-    preflight = state.get("preflight") or {}
-    state["ready_for_rl"] = bool(
-        state["sft_adapter_ready"]
-        and gate.get("passed") is True
-        and preflight.get("trainable_task_ids")
-    )
-    if state["ready_for_rl"]:
-        state["trainable_task_ids"] = list(preflight["trainable_task_ids"])
-    return state
+def token_statistics(model: Any, sample: dict[str, Any]) -> tuple[Any, Any, Any]:
+    import torch
+
+    tokens = torch.cat([sample["prompt_ids"], sample["completion_ids"]]).unsqueeze(0)
+    targets = sample["completion_ids"]
+    keep = int(targets.numel()) + 1
+    policy_logits = model(tokens, logits_to_keep=keep).logits[0, :-1].float()
+    policy_token_logp = torch.log_softmax(policy_logits, dim=-1).gather(
+        1, targets.unsqueeze(1)
+    ).squeeze(1)
+    last_logp = torch.log_softmax(policy_logits[-1], dim=-1)
+    entropy = -(last_logp.exp() * last_logp).sum()
+    del policy_logits, last_logp
+    with torch.no_grad(), model.disable_adapter():
+        reference_logits = model(tokens, logits_to_keep=keep).logits[0, :-1].float()
+        reference_token_logp = torch.log_softmax(reference_logits, dim=-1).gather(
+            1, targets.unsqueeze(1)
+        ).squeeze(1)
+        del reference_logits
+    log_ratio = reference_token_logp - policy_token_logp
+    k3 = (torch.exp(log_ratio) - log_ratio - 1).mean()
+    return policy_token_logp.mean(), k3, entropy
+
+
+def sft_completion_loss(model: Any, prompt_ids: Any, completion_ids: Any) -> Any:
+    import torch
+    import torch.nn.functional as F
+
+    tokens = torch.cat([prompt_ids, completion_ids]).unsqueeze(0)
+    keep = int(completion_ids.numel()) + 1
+    logits = model(tokens, logits_to_keep=keep).logits[0, :-1].float()
+    return F.cross_entropy(logits, completion_ids)
 
 
 def backward_rloo_policy_step(
@@ -222,6 +213,7 @@ def backward_rloo_policy_step(
         entropies.append(entropy)
         loss_i = -(advantages[index].detach() * policy_logp) + beta * k3
         (loss_i / n).backward()
+        del policy_logp, k3, entropy, loss_i
     torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
     optimizer.step()
     with torch.no_grad():
@@ -230,10 +222,20 @@ def backward_rloo_policy_step(
         logp_mean = torch.stack([value.detach() for value in policy_logps])
         loss_value = (-(advantages.detach() * logp_mean).mean() + beta * kl_mean).item()
     model.eval()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
     return {
         "loss": float(loss_value),
         "kl": float(kl_mean.item()),
         "entropy": float(entropy_mean.item()),
     }
+
+
+def build_8bit_optimizer(model: Any, lr: float) -> Any:
+    import torch
+
+    params = [param for param in model.parameters() if param.requires_grad]
+    try:
+        from bitsandbytes.optim import PagedAdamW8bit
+
+        return PagedAdamW8bit(params, lr=lr)
+    except Exception:
+        return torch.optim.AdamW(params, lr=lr)

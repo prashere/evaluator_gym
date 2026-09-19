@@ -1,4 +1,4 @@
-"""Phase 07 training v3 runtime — binary rubric, DAPO resampling, RLOO (CPU-testable)."""
+"""Phase 07 training v3 runtime — train-0.1.0 dual scoring, RLOO, mixed resampling."""
 
 from __future__ import annotations
 
@@ -13,11 +13,7 @@ import numpy as np
 from evaluator_gym.parser import parse_agent_response
 from evaluator_gym.rubric import RUBRIC_VERSION, score_task
 from evaluator_gym.rubric.audit import breakdown_to_dict
-from evaluator_gym.training.phase07_core import (
-    TaskRow,
-    build_training_metric,
-    summarize_rejections,
-)
+from evaluator_gym.training.phase07_core import TaskRow, build_training_metric
 from evaluator_gym.training.phase07_runtime import (
     CompletionGenerator,
     append_jsonl,
@@ -32,13 +28,12 @@ from evaluator_gym.training.phase07v3_core import (
     MAX_TOTAL_COMPLETIONS,
     TRAINING_RUBRIC_VERSION_EXPECTED,
     compute_rloo_advantages,
-    is_mixed_binary_group,
+    decide_training_step_v3,
+    is_mixed_group,
+    summarize_dual_evaluation_v3,
 )
+from evaluator_gym.training_rubric import TRAINING_RUBRIC_VERSION, score_training_task
 from evaluator_gym.training_rubric.audit import training_breakdown_to_dict
-from evaluator_gym.training_rubric.binary import (
-    TRAINING_RUBRIC_VERSION_BINARY,
-    score_binary_training_task,
-)
 
 
 async def score_text_eval_v3(
@@ -63,34 +58,6 @@ async def score_text_eval_v3(
     return breakdown.final_reward, {"ok": True, "data": parsed.data}, breakdown_to_dict(breakdown)
 
 
-async def score_text_binary(
-    task: dict[str, Any],
-    text: str,
-    *,
-    include_eval_rubric_reward: bool = True,
-) -> tuple[float | None, dict[str, Any], dict[str, Any] | None]:
-    parsed = parse_agent_response(text, task["info"])
-    if not parsed.ok:
-        return None, {
-            "ok": False,
-            "error_class": parsed.error_class,
-            "error_message": parsed.error_message,
-        }, None
-    breakdown = await score_binary_training_task(
-        parsed=parsed.data or {},
-        ground_truth=task["ground_truth"],
-        info=task["info"],
-        mode="single",
-        parse_result={"ok": True, "data": parsed.data},
-        include_eval_rubric_reward=include_eval_rubric_reward,
-    )
-    return (
-        breakdown.final_reward,
-        {"ok": True, "data": parsed.data},
-        training_breakdown_to_dict(breakdown),
-    )
-
-
 async def score_text_dual_v3(
     task: dict[str, Any],
     text: str,
@@ -102,7 +69,7 @@ async def score_text_dual_v3(
             "error_class": parsed.error_class,
             "error_message": parsed.error_message,
         }, None
-    breakdown = await score_binary_training_task(
+    training_bd = await score_training_task(
         parsed=parsed.data or {},
         ground_truth=task["ground_truth"],
         info=task["info"],
@@ -110,12 +77,11 @@ async def score_text_dual_v3(
         parse_result={"ok": True, "data": parsed.data},
         include_eval_rubric_reward=True,
     )
-    audit = training_breakdown_to_dict(breakdown)
     return (
-        breakdown.final_reward,
-        breakdown.eval_rubric_reward,
+        training_bd.final_reward,
+        training_bd.eval_rubric_reward,
         {"ok": True, "data": parsed.data},
-        audit,
+        training_breakdown_to_dict(training_bd),
     )
 
 
@@ -138,7 +104,9 @@ def generate_valid_group_v3(
         accepted = None
         for retry in range(MAX_RETRIES):
             generated = generator.generate(task, step=step, group_index=group_index, retry=retry)
-            training_reward, eval_reward, parse_result, audit = score_text_dual_v3_sync(task, generated.text)
+            training_reward, eval_reward, parse_result, audit = score_text_dual_v3_sync(
+                task, generated.text
+            )
             candidate = {
                 "task_id": task["task_id"],
                 "tier": task["tier"],
@@ -186,24 +154,9 @@ def generate_mixed_group_v3(
         if samples is None:
             continue
         rewards = [float(sample["training_reward"]) for sample in samples]
-        if is_mixed_binary_group(rewards):
+        if is_mixed_group(rewards):
             return samples, attempt + 1, completions_used
     return None, max_resample_attempts, completions_used
-
-
-def decide_training_step_v3(
-    *,
-    rewards: list[float] | None,
-    group_complete: bool,
-    resample_accepted: bool,
-) -> tuple[bool, str | None]:
-    if not group_complete or rewards is None:
-        return False, "incomplete_group"
-    if not resample_accepted:
-        return False, "resample_exhausted"
-    if not is_mixed_binary_group(rewards):
-        return False, "degenerate_group"
-    return True, None
 
 
 def run_training_step_v3_cpu(
@@ -214,6 +167,7 @@ def run_training_step_v3_cpu(
     rejection_path: Path | None = None,
     apply_optimizer: Callable[[list[dict[str, Any]], list[float]], dict[str, float]] | None = None,
     total_completions: int = 0,
+    max_resample_attempts: int = MAX_RESAMPLE_ATTEMPTS,
 ) -> tuple[dict[str, Any], list[dict[str, Any]] | None, int]:
     if total_completions >= MAX_TOTAL_COMPLETIONS:
         return (
@@ -253,6 +207,7 @@ def run_training_step_v3_cpu(
         step=nominal_step - 1,
         generator=generator,
         rejection_path=rejection_path,
+        max_resample_attempts=max_resample_attempts,
     )
     if samples is None:
         return (
@@ -297,7 +252,7 @@ def run_training_step_v3_cpu(
         group_rewards=reward_values,
     )
     metric["mean_eval_reward"] = fmean(float(sample["eval_reward"] or 0.0) for sample in samples)
-    metric["training_rubric_version"] = TRAINING_RUBRIC_VERSION_BINARY
+    metric["training_rubric_version"] = TRAINING_RUBRIC_VERSION
     metric["eval_rubric_version"] = RUBRIC_VERSION
     metric["resample_attempts"] = resample_attempts
     metric["completions_used_step"] = completions_used
@@ -362,7 +317,7 @@ def train_run_v3_cpu(
         "optimizer_applied_steps": trained_steps,
         "skip_counts": dict(skip_counts),
         "total_completions": total_completions,
-        "training_rubric_version": TRAINING_RUBRIC_VERSION_BINARY,
+        "training_rubric_version": TRAINING_RUBRIC_VERSION,
         "eval_rubric_version": RUBRIC_VERSION,
     }
     config = {
@@ -372,22 +327,61 @@ def train_run_v3_cpu(
         "schedule_task_ids": [row.task_id if row else None for row in schedule],
         "max_resample_attempts": MAX_RESAMPLE_ATTEMPTS,
         "max_total_completions": MAX_TOTAL_COMPLETIONS,
-        "training_rubric_version": TRAINING_RUBRIC_VERSION_BINARY,
+        "training_rubric_version": TRAINING_RUBRIC_VERSION_EXPECTED,
         "eval_rubric_version": RUBRIC_VERSION,
+        "advantage_estimator": "rloo",
         **(run_config or {}),
     }
     (run_dir / "config.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
-    (run_dir / "budget.json").write_text(
-        json.dumps(
-            {
-                "total_completions": total_completions,
-                "max_total_completions": MAX_TOTAL_COMPLETIONS,
-                "exhaustion_reason": "budget" if total_completions >= MAX_TOTAL_COMPLETIONS else "target_steps",
-            },
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
+    return summary
+
+
+def evaluate_policy_v3_cpu(
+    heldout_tasks: list[dict[str, Any]],
+    generator: CompletionGenerator,
+    run_name: str,
+    output_root: Path,
+    *,
+    rollouts_per_task: int,
+    run_seed: int,
+) -> dict[str, Any]:
+    run_dir = output_root / run_name
+    run_dir.mkdir(parents=True, exist_ok=True)
+    transcript_path = run_dir / "heldout_rollouts.jsonl"
+    if transcript_path.exists():
+        transcript_path.unlink()
+    for task_index, task in enumerate(heldout_tasks):
+        for rollout_index in range(rollouts_per_task):
+            generated = generator.generate(
+                task,
+                step=task_index,
+                group_index=rollout_index,
+                retry=0,
+            )
+            seed = run_seed + task_index * rollouts_per_task + rollout_index
+            training_reward, eval_reward, parse_result, audit = score_text_dual_v3_sync(
+                task, generated.text
+            )
+            append_jsonl(
+                transcript_path,
+                {
+                    "run": run_name,
+                    "task_id": task["task_id"],
+                    "tier": task["tier"],
+                    "rollout_index": rollout_index,
+                    "seed": seed,
+                    "completion": generated.text,
+                    "completion_tokens": generated.completion_tokens,
+                    "reward": eval_reward,
+                    "eval_reward": eval_reward,
+                    "training_reward": training_reward,
+                    "parse_result": parse_result,
+                    "reward_audit": audit,
+                },
+            )
+    rows = read_jsonl(transcript_path)
+    summary = summarize_dual_evaluation_v3(rows)
+    (run_dir / "heldout_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     return summary
 
 
@@ -395,9 +389,9 @@ def exploit_search_v3(run_dir: Path) -> dict[str, Any]:
     rows = read_jsonl(run_dir / "training_rollouts.jsonl")
     outputs = [" ".join(row["completion"].split()) for row in rows]
     modal = Counter(outputs).most_common(1)[0] if outputs else (None, 0)
-    training_rewards = np.array([row["training_reward"] for row in rows], dtype=float)
-    eval_rewards = np.array([row.get("eval_reward") or 0.0 for row in rows], dtype=float)
-    lengths = np.array([row["completion_tokens"] for row in rows], dtype=float)
+    training_rewards = np.array([row["training_reward"] for row in rows], dtype=float) if rows else np.array([])
+    eval_rewards = np.array([row.get("eval_reward") or 0.0 for row in rows], dtype=float) if rows else np.array([])
+    lengths = np.array([row["completion_tokens"] for row in rows], dtype=float) if rows else np.array([])
     training_corr = (
         float(np.corrcoef(training_rewards, lengths)[0, 1])
         if len(rows) > 1 and training_rewards.std() and lengths.std()
@@ -417,7 +411,7 @@ def exploit_search_v3(run_dir: Path) -> dict[str, Any]:
     metrics_rows = read_jsonl(run_dir / "metrics.jsonl")
     return {
         "status": "requires_manual_transcript_review",
-        "training_rubric_version": TRAINING_RUBRIC_VERSION_BINARY,
+        "training_rubric_version": TRAINING_RUBRIC_VERSION,
         "modal_output_fraction": modal[1] / len(rows) if rows else None,
         "training_reward_length_correlation": training_corr,
         "eval_reward_length_correlation": eval_corr,
@@ -443,4 +437,15 @@ def exploit_search_v3(run_dir: Path) -> dict[str, Any]:
             "resample exhaustion",
         ],
         "finding": None,
+        "candidates": {
+            "longest": sorted(rows, key=lambda row: row["completion_tokens"], reverse=True)[:10],
+            "highest_training_reward": sorted(
+                rows, key=lambda row: row["training_reward"], reverse=True
+            )[:10],
+            "strict_json_disagreements": [
+                row
+                for row in rows
+                if row["parse_result"]["ok"] and not strict_json(row["completion"])
+            ][:10],
+        },
     }

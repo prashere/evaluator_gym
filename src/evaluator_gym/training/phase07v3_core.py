@@ -1,111 +1,82 @@
-"""Phase 07 training v3 contracts — binary reward, RLOO, DAPO resampling, SFT gate."""
+"""Phase 07 training v3 contracts — SFT gate, RLOO, mixed-group resampling."""
 
 from __future__ import annotations
 
 import math
-from collections import Counter
 from pathlib import Path
 from statistics import fmean
 from typing import Any
 
 from evaluator_gym.training.phase07_core import (
-    HELDOUT_PER_TIER,
-    HELDOUT_POOL_N,
-    HELDOUT_POOL_SEED,
-    MAX_COMPLETION_TOKENS,
     MAX_RETRIES,
-    RUN_SEED,
-    TRAIN_SEED,
     TRAINING_TIERS,
     TaskRow,
-    build_generated_rows,
-    select_heldout_tasks,
+    build_phase07_splits,
+    is_degenerate_group,
     summarize_evaluation,
     summarize_preflight,
-
+    validate_phase07_splits,
 )
 from evaluator_gym.training.phase07v2_core import (
-    CURRICULUM_TIER2_STEPS,
-    CURRICULUM_TIER3_STEPS,
     MODEL_ID,
     MODEL_REVISION,
     MODEL_SELECTION_NOTE,
 )
-from evaluator_gym.training_rubric.binary import TRAINING_RUBRIC_VERSION_BINARY
+from evaluator_gym.training_rubric import TRAINING_RUBRIC_VERSION
 
-MIN_MODEL_MAX_POSITION = 5600
-
-TRAINING_RUBRIC_VERSION_EXPECTED = TRAINING_RUBRIC_VERSION_BINARY
+TRAINING_RUBRIC_VERSION_EXPECTED = TRAINING_RUBRIC_VERSION
 EVAL_RUBRIC_VERSION_EXPECTED = "0.1.2"
 
-TRAIN_N = 100
-GROUP_SIZE = 6
-TARGET_OPTIMIZER_STEPS = 30
-SMOKE_STEPS = 5
+GROUP_SIZE = 4
+MAX_COMPLETION_TOKENS = 256
+TRAIN_STEPS = 30
+TARGET_OPTIMIZER_STEPS = TRAIN_STEPS
+SMOKE_STEPS = 2
 HELDOUT_ROLLOUTS = 3
-MAX_RESAMPLE_ATTEMPTS = 12
-SMOKE_MAX_RESAMPLE_ATTEMPTS = 8
-MAX_TOTAL_COMPLETIONS = 1800
-PRE_RL_MAX_ALLOCATED_GIB = 2.0
-MIN_TRAINABLE_PASS_RATE = 0.1
-MAX_TRAINABLE_PASS_RATE = 0.9
-MIN_TIER2_TRAINABLE = 10
+MAX_RESAMPLE_ATTEMPTS = 4
+SMOKE_MAX_RESAMPLE_ATTEMPTS = 2
+MAX_TOTAL_COMPLETIONS = 800
+PREFLIGHT_PROBES_PER_TASK = 6
+BETAS = (0.01, 0.1)
+CURRICULUM_TIER2_STEPS = 10
+CURRICULUM_TIER3_STEPS = 20
+SFT_EPOCHS = 2
+SFT_LEARNING_RATE = 1e-4
+RL_LEARNING_RATE = 1e-5
 SFT_GATE_TIER2_MIN = 0.10
 SFT_GATE_TIER2_COMFORT = 0.15
-PREFLIGHT_PROBES_PER_TASK = 8
-BETAS = (0.01, 0.1)
+MIN_TIER2_TRAINABLE = 1
+MIN_MODEL_MAX_POSITION = 5000
+PEAK_STEP_GIB = 12.0
+PRE_RL_MAX_ALLOCATED_GIB = 3.0
 CHECKPOINT_OPTIMIZER_INTERVAL = 10
 DEFAULT_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3")
-PREVIOUS_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3-run2")
 RESULTS_STAGING_ROOT_V3 = Path("results/training/phase07-v3")
-DEFAULT_COLAB_BRANCH = "rl_v3"
 
 
 def validate_model_max_position(max_position: int) -> None:
     if max_position < MIN_MODEL_MAX_POSITION:
         raise RuntimeError(
             f"Model max_position_embeddings={max_position} is below Phase 07 minimum "
-            f"{MIN_MODEL_MAX_POSITION} (tier 2/3 prompts are ~4567 tokens plus up to "
-            f"{MAX_COMPLETION_TOKENS} completion tokens). Qwen2.5-0.5B/1.5B-Instruct "
-            "support 32768; TinyLlama 1.1B (2048) cannot run this benchmark."
+            f"{MIN_MODEL_MAX_POSITION} (tier 2/3 prompts plus "
+            f"{MAX_COMPLETION_TOKENS} completion tokens)."
         )
-
-
-def validate_phase07v3_splits(train_rows: list[TaskRow], heldout_rows: list[TaskRow]) -> None:
-    train_tiers = Counter(row.tier for row in train_rows)
-    per_tier = TRAIN_N // 3
-    for tier in (1, 2, 3):
-        count = train_tiers.get(tier, 0)
-        assert per_tier <= count <= per_tier + (TRAIN_N % 3), (
-            f"tier {tier} count {count} outside expected band for TRAIN_N={TRAIN_N}"
-        )
-    assert Counter(row.tier for row in heldout_rows) == Counter({1: 10, 2: 10, 3: 10})
-    train_ids = {row.task_id for row in train_rows}
-    heldout_ids = {row.task_id for row in heldout_rows}
-    assert train_ids.isdisjoint(heldout_ids)
-    assert {row.prompt_hash for row in train_rows}.isdisjoint(
-        {row.prompt_hash for row in heldout_rows}
-    )
-    assert {row.case_fingerprint for row in train_rows}.isdisjoint(
-        {row.case_fingerprint for row in heldout_rows}
-    )
 
 
 def build_phase07v3_splits():
-    train_config, train_rows = build_generated_rows(TRAIN_SEED, TRAIN_N)
-    heldout_pool_config, heldout_pool = build_generated_rows(HELDOUT_POOL_SEED, HELDOUT_POOL_N)
-    heldout_rows = select_heldout_tasks(train_rows, heldout_pool)
-    validate_phase07v3_splits(train_rows, heldout_rows)
+    train_config, heldout_pool_config, train_rows, heldout_rows = build_phase07_splits()
+    validate_phase07_splits(train_rows, heldout_rows)
     return train_config, heldout_pool_config, train_rows, heldout_rows
 
 
 def wilson_interval(successes: int, trials: int, *, z: float = 1.96) -> tuple[float, float]:
     if trials <= 0:
         return (0.0, 0.0)
-    p = successes / trials
     denom = 1.0 + z * z / trials
-    center = (p + z * z / (2 * trials)) / denom
-    margin = z * math.sqrt((p * (1 - p) / trials) + (z * z / (4 * trials * trials))) / denom
+    center = (successes / trials + z * z / (2 * trials)) / denom
+    margin = z * math.sqrt(
+        (successes / trials) * (1.0 - successes / trials) / trials + (z * z / (4 * trials * trials))
+    ) / denom
     return (max(0.0, center - margin), min(1.0, center + margin))
 
 
@@ -120,46 +91,36 @@ def summarize_evaluation_with_ci(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return summary
 
 
-def is_mixed_binary_group(rewards: list[float], *, tol: float = 1e-9) -> bool:
-    if not rewards:
-        return False
-    successes = sum(reward >= 1.0 - tol for reward in rewards)
-    return 0 < successes < len(rewards)
+def is_mixed_group(rewards: list[float], *, tol: float = 1e-9) -> bool:
+    return not is_degenerate_group(rewards, tol=tol)
 
 
 def compute_rloo_advantages(rewards: list[float]) -> list[float]:
     if len(rewards) < 2:
         return [0.0] * len(rewards)
     total = sum(rewards)
-    return [rewards[i] - (total - rewards[i]) / (len(rewards) - 1) for i in range(len(rewards))]
+    n = len(rewards)
+    return [rewards[i] - (total - rewards[i]) / (n - 1) for i in range(n)]
 
 
-def trainable_task_ids_from_preflight_v3(
-    preflight: dict[str, Any],
-    *,
-    min_rate: float = MIN_TRAINABLE_PASS_RATE,
-    max_rate: float = MAX_TRAINABLE_PASS_RATE,
-) -> set[str]:
+def trainable_task_ids_from_preflight_v3(preflight: dict[str, Any]) -> set[str]:
     eligible: set[str] = set()
     for task_id, row in preflight.get("tasks", {}).items():
         if row.get("tier") not in TRAINING_TIERS:
             continue
         rewards = [float(value) for value in row.get("scored_rewards") or []]
-        if len(rewards) < 2:
-            continue
-        pass_rate = sum(reward >= 1.0 - 1e-9 for reward in rewards) / len(rewards)
-        if min_rate <= pass_rate <= max_rate:
+        if len(set(rewards)) >= 2:
             eligible.add(task_id)
     return eligible
 
 
-def curriculum_tier_for_step_v3(step: int, *, tier3_available: bool) -> int | None:
+def curriculum_tier_for_step_v3(step: int, *, tier3_available: bool) -> int:
     step_number = step + 1
     if step_number <= CURRICULUM_TIER2_STEPS:
         return 2
-    if step_number <= CURRICULUM_TIER3_STEPS:
-        return 3 if tier3_available else 2
-    return None
+    if step_number <= CURRICULUM_TIER3_STEPS and tier3_available:
+        return 3
+    return 2
 
 
 def build_training_schedule_v3(
@@ -174,41 +135,43 @@ def build_training_schedule_v3(
     for tier in TRAINING_TIERS:
         pool_by_tier[tier].sort(key=lambda row: row.task_id)
 
-    tier3_available = bool(pool_by_tier[3])
     mixed_pool = pool_by_tier[2] + pool_by_tier[3]
+    mixed_pool.sort(key=lambda row: row.task_id)
+    tier3_available = bool(pool_by_tier[3])
     schedule: list[TaskRow | None] = []
-    tier2_index = 0
-    tier3_index = 0
-    mixed_index = 0
+    indexes = {2: 0, 3: 0, "mixed": 0}
     for step in range(total_steps):
-        tier = curriculum_tier_for_step_v3(step, tier3_available=tier3_available)
-        if tier == 2:
-            pool = pool_by_tier[2]
-            schedule.append(pool[tier2_index % len(pool)] if pool else None)
-            tier2_index += 1
-        elif tier == 3:
-            pool = pool_by_tier[3]
-            schedule.append(pool[tier3_index % len(pool)] if pool else None)
-            tier3_index += 1
+        step_number = step + 1
+        if step_number <= CURRICULUM_TIER2_STEPS:
+            pool = pool_by_tier[2] or mixed_pool
+            key = 2 if pool_by_tier[2] else "mixed"
+        elif step_number <= CURRICULUM_TIER3_STEPS:
+            if tier3_available:
+                pool = pool_by_tier[3]
+                key = 3
+            else:
+                pool = pool_by_tier[2] or mixed_pool
+                key = 2 if pool_by_tier[2] else "mixed"
         else:
-            schedule.append(mixed_pool[mixed_index % len(mixed_pool)] if mixed_pool else None)
-            mixed_index += 1
+            pool = mixed_pool
+            key = "mixed"
+        if not pool:
+            schedule.append(None)
+            continue
+        schedule.append(pool[indexes[key] % len(pool)])
+        indexes[key] += 1
     return schedule
 
 
 def summarize_preflight_v3(probes: list[dict[str, Any]]) -> dict[str, Any]:
     summary = summarize_preflight(probes)
     trainable = trainable_task_ids_from_preflight_v3(summary)
-    summary["selection_method"] = "binary_pass_rate_band_v3"
+    summary["selection_method"] = "unique_reward_qualified_v3"
     summary["trainable_task_ids"] = sorted(trainable)
     summary["trainable_by_tier"] = {
-        str(tier): sum(
-            1 for task_id in trainable if summary["tasks"][task_id]["tier"] == tier
-        )
+        str(tier): sum(1 for task_id in trainable if summary["tasks"][task_id]["tier"] == tier)
         for tier in TRAINING_TIERS
     }
-    summary["min_trainable_pass_rate"] = MIN_TRAINABLE_PASS_RATE
-    summary["max_trainable_pass_rate"] = MAX_TRAINABLE_PASS_RATE
     summary["training_rubric_version"] = TRAINING_RUBRIC_VERSION_EXPECTED
     return summary
 
@@ -216,13 +179,12 @@ def summarize_preflight_v3(probes: list[dict[str, Any]]) -> dict[str, Any]:
 def validate_trainable_pool_v3(preflight: dict[str, Any]) -> None:
     trainable = set(preflight.get("trainable_task_ids") or [])
     tier2_count = int((preflight.get("trainable_by_tier") or {}).get("2", 0))
-    if tier2_count < MIN_TIER2_TRAINABLE:
-        raise RuntimeError(
-            f"Only {tier2_count} tier-2 trainable tasks (need >= {MIN_TIER2_TRAINABLE}). "
-            "Check preflight pass-rate band or base model capability."
-        )
     if not trainable:
         raise RuntimeError("No trainable tasks after v3 preflight.")
+    if tier2_count < MIN_TIER2_TRAINABLE:
+        raise RuntimeError(
+            f"Only {tier2_count} tier-2 trainable tasks (need >= {MIN_TIER2_TRAINABLE})."
+        )
 
 
 def evaluate_sft_gate(post_sft_summary: dict[str, Any]) -> dict[str, Any]:
@@ -243,13 +205,10 @@ def evaluate_sft_gate(post_sft_summary: dict[str, Any]) -> dict[str, Any]:
 
 def checkpoint_mode_v3(
     *,
-    nominal_step: int,
     optimizer_applied_steps: int,
+    nominal_step: int,
     total_steps: int,
-    smoke_resume: bool = False,
 ) -> str | None:
-    if smoke_resume and nominal_step == total_steps:
-        return "full"
     if optimizer_applied_steps > 0 and optimizer_applied_steps % CHECKPOINT_OPTIMIZER_INTERVAL == 0:
         return "adapter"
     if nominal_step == total_steps:
@@ -276,3 +235,18 @@ def budget_status(total_completions: int) -> dict[str, Any]:
         "remaining": remaining,
         "exhausted": total_completions >= MAX_TOTAL_COMPLETIONS,
     }
+
+
+def decide_training_step_v3(
+    *,
+    rewards: list[float] | None,
+    group_complete: bool,
+    resample_accepted: bool,
+) -> tuple[bool, str | None]:
+    if not group_complete or rewards is None:
+        return False, "incomplete_group"
+    if not resample_accepted:
+        return False, "resample_exhausted"
+    if not is_mixed_group(rewards):
+        return False, "degenerate_group"
+    return True, None
