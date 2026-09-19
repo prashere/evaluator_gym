@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import math
 from pathlib import Path
 from statistics import fmean
@@ -40,18 +41,26 @@ PREFLIGHT_PROBES_PER_TASK = 6
 BETAS = (0.01, 0.1)
 CURRICULUM_TIER2_STEPS = 10
 CURRICULUM_TIER3_STEPS = 20
-SFT_EPOCHS = 2
+SFT_EPOCHS = 1
 SFT_LEARNING_RATE = 1e-4
+SFT_LABEL_SMOOTHING = 0.1
 RL_LEARNING_RATE = 1e-5
 SFT_GATE_TIER2_MIN = 0.10
 SFT_GATE_TIER2_COMFORT = 0.15
+SFT_GATE_PARSE_MIN = 0.95
 MIN_TIER2_TRAINABLE = 1
 MIN_MODEL_MAX_POSITION = 5000
 PEAK_STEP_GIB = 12.0
 PRE_RL_MAX_ALLOCATED_GIB = 3.0
 CHECKPOINT_OPTIMIZER_INTERVAL = 10
-DEFAULT_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3")
+GENERATE_TEMPERATURE = 1.0
+ENTROPY_COEF = 0.01
+ENTROPY_TARGET = 0.5
+DEFAULT_RL_RUNS = ("beta-0.01",)
+RUN_NAME_TO_BETA = {"beta-0.01": 0.01, "beta-0.1": 0.1}
+DEFAULT_OUTPUT_ROOT_V3 = Path("/content/drive/MyDrive/evaluator-gym-phase07-v3-run2")
 RESULTS_STAGING_ROOT_V3 = Path("results/training/phase07-v3")
+SFT_REF_ADAPTER = "sft_ref"
 
 
 def validate_model_max_position(max_position: int) -> None:
@@ -191,16 +200,78 @@ def evaluate_sft_gate(post_sft_summary: dict[str, Any]) -> dict[str, Any]:
     tier2_rate = float(post_sft_summary.get("tier_2_exact_pass_rate") or 0.0)
     tier2_n = int(post_sft_summary.get("tier_2_exact_pass_n") or 0)
     ci = post_sft_summary.get("tier_2_exact_pass_ci95") or [0.0, 0.0]
+    parse_rate = float(post_sft_summary.get("parse_success_rate") or 0.0)
     passed = tier2_rate >= SFT_GATE_TIER2_MIN
+    if passed:
+        action = "proceed_to_rl"
+    elif parse_rate >= SFT_GATE_PARSE_MIN:
+        action = "proceed_with_warning"
+    else:
+        action = "stop_before_rl"
     return {
         "passed": passed,
         "tier_2_exact_pass_rate": tier2_rate,
         "tier_2_exact_pass_n": tier2_n,
         "tier_2_exact_pass_ci95": ci,
+        "parse_success_rate": parse_rate,
         "minimum_required": SFT_GATE_TIER2_MIN,
         "comfort_target": SFT_GATE_TIER2_COMFORT,
-        "action": "proceed_to_rl" if passed else "stop_before_rl",
+        "parse_minimum": SFT_GATE_PARSE_MIN,
+        "action": action,
     }
+
+
+def parse_rl_run_names(raw: str | None) -> tuple[str, ...]:
+    text = (raw or DEFAULT_RL_RUNS[0]).strip().lower()
+    if text in {"all", "both"}:
+        return ("beta-0.01", "beta-0.1")
+    if text in {"beta-0.01", "0.01"}:
+        return ("beta-0.01",)
+    if text in {"beta-0.1", "0.1"}:
+        return ("beta-0.1",)
+    raise ValueError(f"Unknown PHASE07_V3_RL_RUNS={raw!r}")
+
+
+def latest_checkpoint_dir(run_dir: Path | str) -> Path | None:
+    ranked: list[tuple[int, Path]] = []
+    for path in Path(run_dir).glob("checkpoint-*"):
+        if not (path / "state.pt").is_file():
+            continue
+        try:
+            ranked.append((int(path.name.split("-")[1]), path))
+        except (IndexError, ValueError):
+            continue
+    if not ranked:
+        return None
+    ranked.sort()
+    return ranked[-1][1]
+
+
+def training_run_complete(run_dir: Path | str, total_steps: int) -> bool:
+    root = Path(run_dir)
+    adapter = root / "final-adapter" / "adapter_config.json"
+    metrics_path = root / "metrics.jsonl"
+    if not adapter.is_file() or not metrics_path.is_file():
+        return False
+    last = 0
+    for line in metrics_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        last = max(last, int(row.get("nominal_step") or 0))
+    return last >= total_steps
+
+
+def resolve_train_resume(
+    run_dir: Path | str,
+    total_steps: int,
+    resume_checkpoint: Path | str | None = None,
+) -> tuple[Path | None, bool]:
+    if resume_checkpoint is not None:
+        return Path(resume_checkpoint), False
+    if training_run_complete(run_dir, total_steps):
+        return None, True
+    return latest_checkpoint_dir(run_dir), False
 
 
 def checkpoint_mode_v3(

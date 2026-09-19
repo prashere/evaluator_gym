@@ -136,6 +136,9 @@ from evaluator_gym.training.phase07_core import RUN_SEED, ensure_output_root
 from evaluator_gym.training.phase07v3_core import (
     BETAS,
     DEFAULT_OUTPUT_ROOT_V3,
+    ENTROPY_COEF,
+    ENTROPY_TARGET,
+    GENERATE_TEMPERATURE,
     GROUP_SIZE,
     HELDOUT_ROLLOUTS,
     MAX_COMPLETION_TOKENS,
@@ -147,9 +150,12 @@ from evaluator_gym.training.phase07v3_core import (
     MODEL_REVISION,
     MODEL_SELECTION_NOTE,
     PEAK_STEP_GIB,
+    PRE_RL_MAX_ALLOCATED_GIB,
     PREFLIGHT_PROBES_PER_TASK,
     RL_LEARNING_RATE,
+    RUN_NAME_TO_BETA,
     SFT_EPOCHS,
+    SFT_LABEL_SMOOTHING,
     SFT_LEARNING_RATE,
     SMOKE_MAX_RESAMPLE_ATTEMPTS,
     SMOKE_STEPS,
@@ -157,14 +163,18 @@ from evaluator_gym.training.phase07v3_core import (
     TRAIN_STEPS,
     build_training_schedule_v3,
     evaluate_sft_gate,
+    parse_rl_run_names,
+    resolve_train_resume,
     summarize_dual_evaluation_v3,
     summarize_preflight_v3,
+    training_run_complete,
     validate_model_max_position,
     validate_trainable_pool_v3,
 )
 from evaluator_gym.training.phase07v3_notebook import (
     assert_gpu_headroom,
     assert_peak_within_budget,
+    attach_frozen_sft_reference,
     backward_rloo_policy_step,
     build_8bit_optimizer,
     load_sft_adapter_weights,
@@ -193,7 +203,7 @@ print(torch.cuda.get_device_name(0))
 print(MODEL_ID, MODEL_REVISION)
 print(MODEL_SELECTION_NOTE)
 print(OUTPUT_ROOT)
-print(GROUP_SIZE, MAX_COMPLETION_TOKENS, HELDOUT_ROLLOUTS)
+print(GROUP_SIZE, MAX_COMPLETION_TOKENS, HELDOUT_ROLLOUTS, GENERATE_TEMPERATURE, SFT_EPOCHS, ENTROPY_COEF)
 """,
         "c3",
     ),
@@ -272,7 +282,8 @@ def generate_one(model, tokenizer, encoded, prompt_length, seed):
         output = model.generate(
             **encoded,
             do_sample=True,
-            temperature=0.85,
+            temperature=GENERATE_TEMPERATURE,
+            top_k=0,
             max_new_tokens=MAX_COMPLETION_TOKENS,
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
@@ -455,7 +466,9 @@ else:
             )['input_ids'][0].to('cuda')
             if int(completion_ids.numel()) > MAX_COMPLETION_TOKENS:
                 completion_ids = completion_ids[:MAX_COMPLETION_TOKENS]
-            loss = sft_completion_loss(sft_model, encoded['input_ids'][0], completion_ids)
+            loss = sft_completion_loss(
+                sft_model, encoded['input_ids'][0], completion_ids, label_smoothing=SFT_LABEL_SMOOTHING,
+            )
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -466,8 +479,11 @@ else:
     del sft_model
     del sft_tokenizer
     release_gpu_memory(globals())
-    print(json.dumps({'phase': 'sft_complete', 'next': 'restart_runtime', 'adapter': str(adapter_path)}))
-    raise SystemExit('SFT_ADAPTER_SAVED')
+    snap = log_gpu_memory('post-sft-release')
+    if snap.get('cuda_available') and float(snap['allocated_gib']) > PRE_RL_MAX_ALLOCATED_GIB:
+        print(json.dumps({'phase': 'sft_complete', 'next': 'restart_runtime', 'adapter': str(adapter_path)}))
+        raise SystemExit('SFT_ADAPTER_SAVED')
+    print(json.dumps({'phase': 'sft_complete', 'next': 'continue', 'adapter': str(adapter_path)}))
 """,
         "c6",
     ),
@@ -496,7 +512,7 @@ GATE = evaluate_sft_gate(POST_SFT_HELDOUT)
 (OUTPUT_ROOT / 'gate_result.json').write_text(json.dumps(GATE, indent=2))
 print(json.dumps(POST_SFT_HELDOUT, indent=2))
 print(json.dumps(GATE, indent=2))
-if not GATE['passed']:
+if GATE['action'] == 'stop_before_rl':
     del policy_model
     del policy_tokenizer
     release_gpu_memory(globals())
@@ -591,7 +607,7 @@ def save_checkpoint(run_dir, nominal_step, model, optimizer, optimizer_applied_s
     torch.save({
         'nominal_step': nominal_step,
         'optimizer_applied_steps': optimizer_applied_steps,
-        'adapter': get_peft_model_state_dict(model),
+        'adapter': get_peft_model_state_dict(model, adapter_name='default'),
         'optimizer': optimizer.state_dict(),
         'python_rng': random.getstate(),
         'numpy_rng': np.random.get_state(),
@@ -620,6 +636,12 @@ def train_run(beta, run_name, total_steps, trainable_ids, training_schedule, res
         'max_retries': MAX_RETRIES,
         'max_completion_tokens': MAX_COMPLETION_TOKENS,
         'max_resample_attempts': max_resample_attempts,
+        'kl_reference': 'sft_adapter',
+        'entropy_coef': ENTROPY_COEF,
+        'entropy_target': ENTROPY_TARGET,
+        'generate_temperature': GENERATE_TEMPERATURE,
+        'sft_epochs': SFT_EPOCHS,
+        'sft_label_smoothing': SFT_LABEL_SMOOTHING,
         'advantage_estimator': 'rloo',
         'selection_method': 'unique_reward_qualified_v3',
         'trainable_task_ids': sorted(trainable_ids),
@@ -629,15 +651,20 @@ def train_run(beta, run_name, total_steps, trainable_ids, training_schedule, res
     }
     log_gpu_memory(f'pre-{run_name}')
     assert_gpu_headroom(label=run_name)
+    resume_checkpoint, already_complete = resolve_train_resume(run_dir, total_steps, resume_checkpoint)
     model, tokenizer = build_policy()
-    load_sft_adapter_weights(model, sft_adapter_dir(OUTPUT_ROOT))
+    if already_complete:
+        load_sft_adapter_weights(model, run_dir / 'final-adapter')
+        print(json.dumps({'run': run_name, 'status': 'already_complete'}))
+        return model, tokenizer, run_dir
+    attach_frozen_sft_reference(model, sft_adapter_dir(OUTPUT_ROOT))
     optimizer = build_8bit_optimizer(model, RL_LEARNING_RATE)
     start_step = 0
     optimizer_applied_steps = 0
     total_completions = 0
     if resume_checkpoint:
         state = torch.load(Path(resume_checkpoint) / 'state.pt', map_location='cpu', weights_only=False)
-        set_peft_model_state_dict(model, state['adapter'])
+        set_peft_model_state_dict(model, state['adapter'], adapter_name='default')
         optimizer.load_state_dict(state['optimizer'])
         random.setstate(state['python_rng'])
         np.random.set_state(state['numpy_rng'])
@@ -645,8 +672,7 @@ def train_run(beta, run_name, total_steps, trainable_ids, training_schedule, res
         torch.cuda.set_rng_state_all(state['cuda_rng'])
         start_step = state['nominal_step']
         optimizer_applied_steps = state.get('optimizer_applied_steps', 0)
-    elif metrics_path.exists() or rollout_path.exists():
-        raise RuntimeError(f'{run_dir} already contains a run')
+        print(json.dumps({'run': run_name, 'status': 'resume', 'checkpoint': str(resume_checkpoint), 'start_step': start_step}))
     (run_dir / 'config.json').write_text(json.dumps(run_config, indent=2))
     skip_counts = Counter()
     live = LiveRunLogger(run_name, run_dir)
@@ -708,6 +734,8 @@ def train_run(beta, run_name, total_steps, trainable_ids, training_schedule, res
             samples=samples,
             beta=beta,
             token_statistics_fn=token_statistics,
+            entropy_coef=ENTROPY_COEF,
+            entropy_target=ENTROPY_TARGET,
         )
         optimizer_applied_steps += 1
         assert_peak_within_budget(label=run_name)
@@ -740,20 +768,15 @@ log_gpu_memory('pre-smoke')
 assert_gpu_headroom(label='smoke')
 if torch.cuda.is_available():
     torch.cuda.reset_peak_memory_stats()
-smoke_model, smoke_tokenizer, smoke_dir = train_run(
-    BETAS[0], 'smoke', SMOKE_STEPS, TRAINABLE_IDS, TRAINING_SCHEDULE[:SMOKE_STEPS],
-    max_resample_attempts=SMOKE_MAX_RESAMPLE_ATTEMPTS,
-)
-assert_peak_within_budget(label='smoke')
-del smoke_model
-del smoke_tokenizer
-release_gpu_memory(globals())
-smoke_checkpoints = sorted(smoke_dir.glob('checkpoint-*'), key=lambda p: int(p.name.split('-')[1]))
-if smoke_checkpoints:
+smoke_dir = OUTPUT_ROOT / 'smoke'
+if training_run_complete(smoke_dir, SMOKE_STEPS):
+    print(json.dumps({'run': 'smoke', 'status': 'already_complete'}))
+else:
     smoke_model, smoke_tokenizer, smoke_dir = train_run(
-        BETAS[0], 'smoke', SMOKE_STEPS + 1, TRAINABLE_IDS, TRAINING_SCHEDULE[:SMOKE_STEPS + 1],
-        smoke_checkpoints[-1], max_resample_attempts=SMOKE_MAX_RESAMPLE_ATTEMPTS,
+        BETAS[0], 'smoke', SMOKE_STEPS, TRAINABLE_IDS, TRAINING_SCHEDULE[:SMOKE_STEPS],
+        max_resample_attempts=SMOKE_MAX_RESAMPLE_ATTEMPTS,
     )
+    assert_peak_within_budget(label='smoke')
     del smoke_model
     del smoke_tokenizer
     release_gpu_memory(globals())
@@ -764,6 +787,7 @@ print('Smoke and resume passed')
     _cell(
         """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -776,26 +800,44 @@ from evaluator_gym.training.colab_bootstrap import ensure_colab_repo_path
 
 ensure_colab_repo_path(REPO)
 
-low_model, low_tokenizer, low_dir = train_run(BETAS[0], 'beta-0.01', TARGET_OPTIMIZER_STEPS, TRAINABLE_IDS, TRAINING_SCHEDULE)
-LOW_HELDOUT = evaluate_policy(low_model, low_tokenizer, 'beta-0.01')
-del low_model
-del low_tokenizer
-release_gpu_memory(globals())
-
-strong_model, strong_tokenizer, strong_dir = train_run(BETAS[1], 'beta-0.1', TARGET_OPTIMIZER_STEPS, TRAINABLE_IDS, TRAINING_SCHEDULE)
-STRONG_HELDOUT = evaluate_policy(strong_model, strong_tokenizer, 'beta-0.1')
-del strong_model
-del strong_tokenizer
-release_gpu_memory(globals())
+RL_RUN_NAMES = parse_rl_run_names(os.environ.get('PHASE07_V3_RL_RUNS'))
+print(json.dumps({'rl_runs': list(RL_RUN_NAMES)}))
+RL_DIRS = {}
+HELDOUT_BY_RUN = {}
+for run_name in RL_RUN_NAMES:
+    run_dir = OUTPUT_ROOT / run_name
+    heldout_path = run_dir / 'heldout_summary.json'
+    if training_run_complete(run_dir, TARGET_OPTIMIZER_STEPS) and heldout_path.is_file():
+        HELDOUT_BY_RUN[run_name] = json.loads(heldout_path.read_text())
+        RL_DIRS[run_name] = run_dir
+        print(json.dumps({'run': run_name, 'status': 'heldout_cached'}))
+        continue
+    model, tokenizer, run_dir = train_run(
+        RUN_NAME_TO_BETA[run_name], run_name, TARGET_OPTIMIZER_STEPS, TRAINABLE_IDS, TRAINING_SCHEDULE,
+    )
+    HELDOUT_BY_RUN[run_name] = evaluate_policy(model, tokenizer, run_name)
+    RL_DIRS[run_name] = run_dir
+    del model
+    del tokenizer
+    release_gpu_memory(globals())
 
 COMPARISON = {
     'base': BASE_HELDOUT,
     'post_sft': POST_SFT_HELDOUT,
-    'beta-0.01': LOW_HELDOUT,
-    'beta-0.1': STRONG_HELDOUT,
     'training_rubric_version': TRAINING_RUBRIC_VERSION,
     'eval_rubric_version': RUBRIC_VERSION,
+    'rl_runs': list(RL_RUN_NAMES),
 }
+for name in ('beta-0.01', 'beta-0.1'):
+    if name in HELDOUT_BY_RUN:
+        COMPARISON[name] = HELDOUT_BY_RUN[name]
+    elif (OUTPUT_ROOT / name / 'heldout_summary.json').is_file():
+        COMPARISON[name] = json.loads((OUTPUT_ROOT / name / 'heldout_summary.json').read_text())
+
+low_dir = RL_DIRS.get('beta-0.01', OUTPUT_ROOT / 'beta-0.01')
+strong_dir = RL_DIRS.get('beta-0.1', OUTPUT_ROOT / 'beta-0.1')
+LOW_HELDOUT = COMPARISON.get('beta-0.01')
+STRONG_HELDOUT = COMPARISON.get('beta-0.1')
 (OUTPUT_ROOT / 'heldout_comparison.json').write_text(json.dumps(COMPARISON, indent=2))
 print(json.dumps(COMPARISON, indent=2))
 """,
@@ -820,40 +862,51 @@ import matplotlib.pyplot as plt
 
 FIGURE_DIR = OUTPUT_ROOT / 'figures'
 FIGURE_DIR.mkdir(exist_ok=True)
-runs = {
-    'beta=0.01': read_jsonl(low_dir / 'metrics.jsonl'),
-    'beta=0.1': read_jsonl(strong_dir / 'metrics.jsonl'),
-}
+runs = {}
+if (OUTPUT_ROOT / 'beta-0.01' / 'metrics.jsonl').is_file():
+    runs['beta=0.01'] = read_jsonl(OUTPUT_ROOT / 'beta-0.01' / 'metrics.jsonl')
+if (OUTPUT_ROOT / 'beta-0.1' / 'metrics.jsonl').is_file():
+    runs['beta=0.1'] = read_jsonl(OUTPUT_ROOT / 'beta-0.1' / 'metrics.jsonl')
 
 
 def save_curve(field, ylabel, filename):
     figure, axis = plt.subplots(figsize=(7, 4))
     for label, rows in runs.items():
         points = [(row['nominal_step'], row[field]) for row in rows if row.get(field) is not None and row.get('optimizer_applied')]
-        axis.plot([x for x, _ in points], [y for _, y in points], marker='o', markersize=3, label=label)
+        if points:
+            axis.plot([x for x, _ in points], [y for _, y in points], marker='o', markersize=3, label=label)
     axis.set(xlabel='Nominal step', ylabel=ylabel, title=ylabel)
     axis.grid(alpha=0.25)
-    axis.legend()
+    if runs:
+        axis.legend()
     figure.tight_layout()
     figure.savefig(FIGURE_DIR / f'{filename}.png', dpi=140)
     plt.close(figure)
 
 
 save_curve('mean_reward', 'Mean training reward', 'reward')
-save_curve('kl', 'Frozen-reference k3 KL', 'kl')
+save_curve('kl', 'Frozen-SFT k3 KL', 'kl')
 save_curve('entropy', 'Last-token entropy', 'entropy')
 save_curve('mean_completion_length', 'Completion length', 'completion-length')
 save_curve('exact_pass_rate', 'Exact pass rate', 'per-tier-pass-rate')
 
-labels = ['base', 'post_sft', 'beta-0.01', 'beta-0.1']
-figure, axis = plt.subplots(figsize=(7, 4))
-axis.bar(labels, [COMPARISON[name]['mean_reward_scored'] for name in labels])
-axis.set(ylabel='Held-out mean eval reward', title='Held-out before/after')
-figure.tight_layout()
-figure.savefig(FIGURE_DIR / 'heldout-before-after.png', dpi=140)
-plt.close(figure)
+labels = [
+    name for name in ['base', 'post_sft', 'beta-0.01', 'beta-0.1']
+    if isinstance(COMPARISON.get(name), dict) and 'mean_reward_scored' in COMPARISON[name]
+]
+if labels:
+    figure, axis = plt.subplots(figsize=(7, 4))
+    axis.bar(labels, [COMPARISON[name]['mean_reward_scored'] for name in labels])
+    axis.set(ylabel='Held-out mean eval reward', title='Held-out before/after')
+    figure.tight_layout()
+    figure.savefig(FIGURE_DIR / 'heldout-before-after.png', dpi=140)
+    plt.close(figure)
 
-AUDIT = {'beta-0.01': exploit_search_v3(low_dir), 'beta-0.1': exploit_search_v3(strong_dir)}
+AUDIT = {}
+for name in ('beta-0.01', 'beta-0.1'):
+    directory = OUTPUT_ROOT / name
+    if (directory / 'training_rollouts.jsonl').is_file():
+        AUDIT[name] = exploit_search_v3(directory)
 (OUTPUT_ROOT / 'exploit_search.json').write_text(json.dumps(AUDIT, indent=2, default=str))
 print(json.dumps({key: {k: v for k, v in row.items() if k != 'candidates'} for key, row in AUDIT.items()}, indent=2))
 """,

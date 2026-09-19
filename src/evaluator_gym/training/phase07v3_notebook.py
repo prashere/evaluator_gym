@@ -8,7 +8,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from evaluator_gym.training.phase07v3_core import PEAK_STEP_GIB, PRE_RL_MAX_ALLOCATED_GIB
+from evaluator_gym.training.phase07v3_core import (
+    ENTROPY_COEF,
+    ENTROPY_TARGET,
+    PEAK_STEP_GIB,
+    PRE_RL_MAX_ALLOCATED_GIB,
+    SFT_LABEL_SMOOTHING,
+    SFT_REF_ADAPTER,
+)
 
 SFT_RUN_NAME = "sft"
 SFT_ADAPTER_TAG = "final-adapter"
@@ -69,7 +76,7 @@ def sft_adapter_ready(output_root: Path | str) -> bool:
     return (adapter_dir / "adapter_config.json").is_file()
 
 
-def load_sft_adapter_weights(model: Any, adapter_dir: Path | str) -> None:
+def load_sft_adapter_weights(model: Any, adapter_dir: Path | str, adapter_name: str = "default") -> None:
     from peft import set_peft_model_state_dict
     from peft.utils.save_and_load import load_peft_weights
 
@@ -77,7 +84,55 @@ def load_sft_adapter_weights(model: Any, adapter_dir: Path | str) -> None:
     if not (path / "adapter_config.json").is_file():
         raise FileNotFoundError(f"No SFT adapter at {path}")
     weights = load_peft_weights(str(path))
-    set_peft_model_state_dict(model, weights)
+    set_peft_model_state_dict(model, weights, adapter_name=adapter_name)
+
+
+def attach_frozen_sft_reference(model: Any, adapter_dir: Path | str) -> str:
+    from copy import deepcopy
+
+    peft_config = getattr(model, "peft_config", None)
+    if not isinstance(peft_config, dict) or "default" not in peft_config:
+        raise RuntimeError("Policy is not a PEFT model; cannot attach frozen SFT reference.")
+    if SFT_REF_ADAPTER not in peft_config:
+        model.add_adapter(SFT_REF_ADAPTER, deepcopy(peft_config["default"]))
+    load_sft_adapter_weights(model, adapter_dir, adapter_name=SFT_REF_ADAPTER)
+    load_sft_adapter_weights(model, adapter_dir, adapter_name="default")
+    for name, param in model.named_parameters():
+        if SFT_REF_ADAPTER in name:
+            param.requires_grad_(False)
+    trainable_ref = [
+        name for name, param in model.named_parameters()
+        if param.requires_grad and SFT_REF_ADAPTER in name
+    ]
+    if trainable_ref:
+        raise RuntimeError(f"Frozen SFT reference leaked trainable params: {trainable_ref[:5]}")
+    model.set_adapter("default")
+    return SFT_REF_ADAPTER
+
+
+def _active_adapter_name(model: Any) -> str:
+    active = getattr(model, "active_adapter", None)
+    if isinstance(active, (list, tuple)):
+        return str(active[0]) if active else "default"
+    if active:
+        return str(active)
+    adapters = getattr(model, "active_adapters", None)
+    if isinstance(adapters, (list, tuple)) and adapters:
+        return str(adapters[0])
+    return "default"
+
+
+def reference_logits(model: Any, tokens: Any, keep: int) -> Any:
+    peft_config = getattr(model, "peft_config", None)
+    if isinstance(peft_config, dict) and SFT_REF_ADAPTER in peft_config:
+        previous = _active_adapter_name(model)
+        try:
+            model.set_adapter(SFT_REF_ADAPTER)
+            return model(tokens, logits_to_keep=keep).logits[0, :-1].float()
+        finally:
+            model.set_adapter(previous)
+    with model.disable_adapter():
+        return model(tokens, logits_to_keep=keep).logits[0, :-1].float()
 
 
 def gpu_memory_snapshot() -> dict[str, float | bool]:
@@ -172,25 +227,31 @@ def token_statistics(model: Any, sample: dict[str, Any]) -> tuple[Any, Any, Any]
     last_logp = torch.log_softmax(policy_logits[-1], dim=-1)
     entropy = -(last_logp.exp() * last_logp).sum()
     del policy_logits, last_logp
-    with torch.no_grad(), model.disable_adapter():
-        reference_logits = model(tokens, logits_to_keep=keep).logits[0, :-1].float()
-        reference_token_logp = torch.log_softmax(reference_logits, dim=-1).gather(
+    with torch.no_grad():
+        ref_logits = reference_logits(model, tokens, keep)
+        reference_token_logp = torch.log_softmax(ref_logits, dim=-1).gather(
             1, targets.unsqueeze(1)
         ).squeeze(1)
-        del reference_logits
+        del ref_logits
     log_ratio = reference_token_logp - policy_token_logp
     k3 = (torch.exp(log_ratio) - log_ratio - 1).mean()
     return policy_token_logp.mean(), k3, entropy
 
 
-def sft_completion_loss(model: Any, prompt_ids: Any, completion_ids: Any) -> Any:
+def sft_completion_loss(
+    model: Any,
+    prompt_ids: Any,
+    completion_ids: Any,
+    *,
+    label_smoothing: float = SFT_LABEL_SMOOTHING,
+) -> Any:
     import torch
     import torch.nn.functional as F
 
     tokens = torch.cat([prompt_ids, completion_ids]).unsqueeze(0)
     keep = int(completion_ids.numel()) + 1
     logits = model(tokens, logits_to_keep=keep).logits[0, :-1].float()
-    return F.cross_entropy(logits, completion_ids)
+    return F.cross_entropy(logits, completion_ids, label_smoothing=label_smoothing)
 
 
 def backward_rloo_policy_step(
@@ -202,6 +263,8 @@ def backward_rloo_policy_step(
     beta: float,
     token_statistics_fn: Any,
     max_grad_norm: float = 1.0,
+    entropy_coef: float = ENTROPY_COEF,
+    entropy_target: float = ENTROPY_TARGET,
 ) -> dict[str, float]:
     import torch
 
@@ -216,21 +279,30 @@ def backward_rloo_policy_step(
         policy_logps.append(policy_logp)
         kls.append(k3)
         entropies.append(entropy)
-        loss_i = -(advantages[index].detach() * policy_logp) + beta * k3
+        apply_entropy = (entropy.detach() <= entropy_target).to(entropy.dtype)
+        loss_i = (
+            -(advantages[index].detach() * policy_logp)
+            + beta * k3
+            - entropy_coef * apply_entropy * entropy
+        )
         (loss_i / n).backward()
-        del policy_logp, k3, entropy, loss_i
+        del policy_logp, k3, entropy, loss_i, apply_entropy
     torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
     optimizer.step()
     with torch.no_grad():
         kl_mean = torch.stack([value.detach() for value in kls]).mean()
         entropy_mean = torch.stack([value.detach() for value in entropies]).mean()
         logp_mean = torch.stack([value.detach() for value in policy_logps])
-        loss_value = (-(advantages.detach() * logp_mean).mean() + beta * kl_mean).item()
+        entropy_bonus = entropy_coef * float((entropy_mean <= entropy_target).to(entropy_mean.dtype))
+        loss_value = (
+            -(advantages.detach() * logp_mean).mean() + beta * kl_mean - entropy_bonus * entropy_mean
+        ).item()
     model.eval()
     return {
         "loss": float(loss_value),
         "kl": float(kl_mean.item()),
         "entropy": float(entropy_mean.item()),
+        "entropy_coef": float(entropy_coef),
     }
 
 
